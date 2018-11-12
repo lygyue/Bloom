@@ -140,7 +140,23 @@ protected:
 	~Scene();
 	static Scene* CurrentScene;
 
+	struct BuildStruct
+	{
+		int Width;
+		int Height;
+		int StartTexCoordX;
+		int StartTexCoordY;
+		int EndTexCoordX;
+		int EndTexCoordY;
+		int SceneNodeCount;
+		float NodeDepth;
+		std::string MatName;
+		std::string MeshName;
+		std::string TexFullPath;
+	};
+
 	void BuildQuad(Vector3* Pos, Vector2* UV, int Width, int Height, int UStart, int VStart, int UEnd, int VEnd) const;
+	void BuildRandomSceneNode(BuildStruct& BS);
 	void InitialiseScene();
 	void CreateBackGround();
 	void SwitchToNextBackGround();

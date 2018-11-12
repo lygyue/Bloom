@@ -14,12 +14,12 @@
 
 #define Game_BACKGROUND_PATH		"Resource\\BackGround\\"
 #define Game_ASSETS_PATH			"Resource\\Assets\\"
-#define RESOURCE_WALL				"Wall.jpg"
-#define RESOURCE_BLOOM				"Bloom.jpg"
-#define RESOURCE_APPLES				"Apples.jpg"
-#define RESOURCE_FLAG				"Flag.jpg"
+#define RESOURCE_WALL				"Wall.png"
+#define RESOURCE_BLOOM				"Bloom.png"
+#define RESOURCE_APPLES				"Apples.png"
+#define RESOURCE_FLAG				"Flag.png"
 #define RESOURCE_START				"start.png"
-#define RESOURCE_STAR				"star1.jpg"
+#define RESOURCE_STAR				"star1.png"
 
 ResourceManager::ResourceManager()
 {

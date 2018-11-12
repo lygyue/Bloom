@@ -170,8 +170,8 @@ void Scene::RenderOneFrame()
 
 void Scene::BuildQuad(Vector3* Pos, Vector2* UV, int Width, int Height, int UStart, int VStart, int UEnd, int VEnd) const
 {
-	float W = float(Width) / float(WINDOW_WIDTH);
-	float H = float(Height) / float(WINDOW_HEIGHT);
+	float W = float(UEnd - UStart) / float(WINDOW_WIDTH);
+	float H = float(VEnd - VStart) / float(WINDOW_HEIGHT);
 	Pos[0] = Vector3(-W / 2.0, H / 2.0, 0);
 	Pos[1] = Vector3(W / 2.0, H / 2.0, 0);
 	Pos[2] = Vector3(W / 2.0, -H / 2.0, 0);
@@ -187,6 +187,27 @@ void Scene::BuildQuad(Vector3* Pos, Vector2* UV, int Width, int Height, int USta
 	return;
 }
 
+void Scene::BuildRandomSceneNode(BuildStruct& BS)
+{
+	Vector3 Pos[4];
+	Vector2 UV[4];
+	float BackGroundWidth = (GAME_TIME / SCREEN_PASS_TIME) * 2.0f;
+	BuildQuad(Pos, UV, BS.Width, BS.Height, BS.StartTexCoordX, BS.StartTexCoordY, BS.EndTexCoordX, BS.EndTexCoordY);
+	char Name[128];
+	Material* Mat = mMaterialManager->CreateMaterial(BS.MatName, SimpleSampleWithBlur);
+	D3d11Texture* Tex = mTextureManager->LoadTextureFromFile(BS.TexFullPath, mRenderSystem->GetD3d11Device(), BS.TexFullPath.c_str(), false);
+	Mat->SetTexture(Tex);
+	Mesh* M = mMeshManager->CreateQuad(BS.MeshName, Pos, UV);
+	M->SetMaterial(Mat);
+	for (int i = 0; i < BS.SceneNodeCount; i++)
+	{
+		memset(Name, 0, sizeof(Name));
+		sprintf_s(Name, 128, "%s_%d", BS.MeshName.c_str(), i);
+		SceneNode* SN = mRootSceneNode->CreateChild(Name, Vector3(RangeRandom(0, BackGroundWidth), RangeRandom(-0.8, 0.8), BS.NodeDepth), Quaternion::IDENTITY, Vector3(1, 1, 1));
+		SN->AttachMesh(M);
+	}
+}
+
 void Scene::InitialiseScene()
 {
 	// create start
@@ -195,7 +216,7 @@ void Scene::InitialiseScene()
 	int Width = 260;
 	int Height = 300;
 	BuildQuad(Pos, UV, Width, Height, 0, 0, Width, Height);
-	SceneNode* StartNode = mRootSceneNode->CreateChild("Start_Node", Vector3(0.7, 0, FAR_PLANE - 100), Quaternion::IDENTITY, Vector3(1, 1, 1));
+	SceneNode* StartNode = mRootSceneNode->CreateChild("Start_Node", Vector3(-0.7, 0, FAR_PLANE - 100), Quaternion::IDENTITY, Vector3(1, 1, 1));
 	Mesh* M = mMeshManager->CreateQuad("Start_Mesh", Pos, UV);
 	Material* Mat = mMaterialManager->CreateMaterial("Start_Material_0", SimpleSampleWithBlur);
 	std::string StartImageFileName = mResourceManager->GetStartImagePath();
@@ -204,8 +225,102 @@ void Scene::InitialiseScene()
 
 	Mat->SetTexture(Tex);
 	M->SetMaterial(Mat);
-
 	StartNode->AttachMesh(M);
+
+	// Flag
+	Width = 150;
+	Height = 410;
+	float BackGroundWidth = (GAME_TIME / SCREEN_PASS_TIME) * 2.0f;
+	BuildQuad(Pos, UV, Width, Height, 0, 0, Width, Height);
+	SceneNode* FlagNode = mRootSceneNode->CreateChild("Flag_Node", Vector3(BackGroundWidth - 1, 0, FAR_PLANE - 200), Quaternion::IDENTITY, Vector3(1, 1, 1));
+	M = mMeshManager->CreateQuad("Flag_Mesh", Pos, UV);
+	Mat = mMaterialManager->CreateMaterial("Flag_Material_0", SimpleSampleWithBlur);
+	std::string FlagImageFileName = mResourceManager->GetFlagImagePath();
+
+	Tex = mTextureManager->LoadTextureFromFile(FlagImageFileName, mRenderSystem->GetD3d11Device(), FlagImageFileName.c_str(), false);
+
+	Mat->SetTexture(Tex);
+	M->SetMaterial(Mat);
+	FlagNode->AttachMesh(M);
+
+	// Wall
+	BuildStruct BS;
+	BS.Width = 40;
+	BS.Height = 856;
+	BS.SceneNodeCount = 10;
+	BS.StartTexCoordX = BS.StartTexCoordY = 0;
+	BS.EndTexCoordX = 40;
+	BS.EndTexCoordY = 856;
+	BS.NodeDepth = FAR_PLANE - 100;
+	BS.MatName = "Wall_Material_0";
+	BS.MeshName = "Wall_Mesh_0";
+	BS.TexFullPath = mResourceManager->GetWallImagePath();
+	BuildRandomSceneNode(BS);
+	// red apples
+	BS.Width = 730;
+	BS.Height = 260;
+	BS.SceneNodeCount = 10;
+	BS.StartTexCoordX = 136;
+	BS.StartTexCoordY = 84;
+	BS.EndTexCoordX = 136 + 66;
+	BS.EndTexCoordY = 84 + 66;
+	BS.NodeDepth = FAR_PLANE - 150;
+	BS.MatName = "Red_Apple_Material_0";
+	BS.MeshName = "Red_Apple_Mesh_0";
+	BS.TexFullPath = mResourceManager->GetApplesImagePath();
+	BuildRandomSceneNode(BS);
+	// yellow apples
+	BS.Width = 730;
+	BS.Height = 260;
+	BS.SceneNodeCount = 10;
+	BS.StartTexCoordX = 200;
+	BS.StartTexCoordY = 84;
+	BS.EndTexCoordX = 200 + 66;
+	BS.EndTexCoordY = 84 + 66;
+	BS.NodeDepth = FAR_PLANE - 160;
+	BS.MatName = "Yellow_Apple_Material_0";
+	BS.MeshName = "Yellow_Apple_Mesh_0";
+	BS.TexFullPath = mResourceManager->GetApplesImagePath();
+	BuildRandomSceneNode(BS);
+	// Carmine Circles
+	BS.Width = 730;
+	BS.Height = 260;
+	BS.SceneNodeCount = 10;
+	BS.StartTexCoordX = 370;
+	BS.StartTexCoordY = 28;
+	BS.EndTexCoordX = 370 + 116;
+	BS.EndTexCoordY = 28 + 170;
+	BS.NodeDepth = FAR_PLANE - 170;
+	BS.MatName = "Carmine_Circle_Material_0";
+	BS.MeshName = "Carmine_Circle_Mesh_0";
+	BS.TexFullPath = mResourceManager->GetApplesImagePath();
+	BuildRandomSceneNode(BS);
+	// Yellow Circles
+	BS.Width = 730;
+	BS.Height = 260;
+	BS.SceneNodeCount = 10;
+	BS.StartTexCoordX = 522;
+	BS.StartTexCoordY = 28;
+	BS.EndTexCoordX = 522 + 116;
+	BS.EndTexCoordY = 28 + 170;
+	BS.NodeDepth = FAR_PLANE - 180;
+	BS.MatName = "Yellow_Circle_Material_0";
+	BS.MeshName = "Yellow_Circle_Mesh_0";
+	BS.TexFullPath = mResourceManager->GetApplesImagePath();
+	BuildRandomSceneNode(BS);
+	// Stars
+	BS.Width = 230;
+	BS.Height = 194;
+	BS.SceneNodeCount = 10;
+	BS.StartTexCoordX = 0;
+	BS.StartTexCoordY = 0;
+	BS.EndTexCoordX = 230;
+	BS.EndTexCoordY = 194;
+	BS.NodeDepth = FAR_PLANE - 190;
+	BS.MatName = "Star_Material_0";
+	BS.MeshName = "Star_Mesh_0";
+	BS.TexFullPath = mResourceManager->GetStarImagePath();
+	BuildRandomSceneNode(BS);
 }
 
 void Scene::CreateBackGround()
