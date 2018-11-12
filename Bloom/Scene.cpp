@@ -81,14 +81,10 @@ void Scene::Update()
 {
 	mEffectManager->Update();
 	// update camera
-	static float Delta = 0;
-	Delta += float(Timer::GetInstance()->GetDelta()) * 0.001;
-	if (Delta > 0.01667)
-	{
-		float xOffset = (Delta / SCREEN_PASS_TIME) * 2.0f;
-		mCamera->Translate(xOffset, 0, 0);
-		Delta -= 0.01667;
-	}
+	float Delta = float(Timer::GetInstance()->GetDelta()) * 0.001;
+
+	float xOffset = (Delta / SCREEN_PASS_TIME) * 2.0f;
+	mCamera->Translate(xOffset, 0, 0);
 
 	RenderOneFrame();
 	return;
@@ -199,9 +195,9 @@ void Scene::InitialiseScene()
 	int Width = 260;
 	int Height = 300;
 	BuildQuad(Pos, UV, Width, Height, 0, 0, Width, Height);
-	SceneNode* StartNode = mRootSceneNode->CreateChild("Start_Node", Vector3(0.7, 0, 10), Quaternion::IDENTITY, Vector3(1, 1, 1));
+	SceneNode* StartNode = mRootSceneNode->CreateChild("Start_Node", Vector3(0.7, 0, FAR_PLANE - 100), Quaternion::IDENTITY, Vector3(1, 1, 1));
 	Mesh* M = mMeshManager->CreateQuad("Start_Mesh", Pos, UV);
-	Material* Mat = mMaterialManager->CreateMaterial("Start_Material_0", SimpleTextureSample);
+	Material* Mat = mMaterialManager->CreateMaterial("Start_Material_0", SimpleSampleWithBlur);
 	std::string StartImageFileName = mResourceManager->GetStartImagePath();
 
 	D3d11Texture* Tex = mTextureManager->LoadTextureFromFile(StartImageFileName, mRenderSystem->GetD3d11Device(), StartImageFileName.c_str(), false);

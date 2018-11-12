@@ -35,7 +35,7 @@ enum BaseShader
 	SimplePerlinNoise,
 	SimpleUScroll,
 	SimpleFogSimulation,
-	SimpleSampleWhiteAsALpha,
+	SimpleSampleWithBlur,
 	CutomShader,
 };
 enum ShaderElement
