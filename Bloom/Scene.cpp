@@ -77,15 +77,27 @@ bool Scene::Initialise(HWND hWnd)
 	return true;
 }
 
+void Scene::SetCameraAnimation(bool StartAnimation)
+{
+	mCameraAnimation = StartAnimation;
+}
+
+bool Scene::GetCameraAnimation() const
+{
+	return mCameraAnimation;
+}
+
 void Scene::Update()
 {
 	mEffectManager->Update();
-	// update camera
-	float Delta = float(Timer::GetInstance()->GetDelta()) * 0.001;
+	if (mCameraAnimation)
+	{
+		// update camera
+		float Delta = float(Timer::GetInstance()->GetDelta()) * 0.001;
 
-	float xOffset = (Delta / SCREEN_PASS_TIME) * 2.0f;
-	mCamera->Translate(xOffset, 0, 0);
-
+		float xOffset = (Delta / SCREEN_PASS_TIME) * 2.0f;
+		mCamera->Translate(xOffset, 0, 0);
+	}
 	RenderOneFrame();
 	return;
 }

@@ -132,6 +132,9 @@ public:
 	LogImpl* GetLogImpl() const;
 
 	std::string GetApplicationPath() const;
+
+	void SetCameraAnimation(bool StartAnimation);
+	bool GetCameraAnimation() const;
 public:
 	void RenderOneFrame();
 
@@ -174,4 +177,6 @@ private:
 	LogImpl* mLog;
 	std::string mApplicationPath;
 	HWND mHwnd;
+
+	bool mCameraAnimation;
 };
