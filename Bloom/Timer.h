@@ -45,7 +45,8 @@ public:
 	static Timer* GetInstance();
 	// ¸üÐÂ
 	bool Update();
-	unsigned long GetDelta();
+	unsigned long GetDelta() const;
+	float GetDeltaFloat() const;
 	/** Returns milliseconds since initialisation or last reset */
 	unsigned long getMilliseconds();
 	/** Returns microseconds since initialisation or last reset */

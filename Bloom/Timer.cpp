@@ -65,11 +65,15 @@ bool Timer::Update()
 	return true;
 }
 //-------------------------------------------------------------------------
-unsigned long Timer::GetDelta()
+unsigned long Timer::GetDelta() const
 {
 	return mDelta;
 }
-
+//-------------------------------------------------------------------------
+float Timer::GetDeltaFloat() const
+{
+	return float(mDelta) * 0.001f;
+}
 //-------------------------------------------------------------------------
 void Timer::AddTimer(ITimerListener* Listener, unsigned int EventID, unsigned int Delta)
 {

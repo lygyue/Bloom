@@ -9,6 +9,7 @@
 #include "Scene.h"
 #include "Math/Vector2.h"
 #include "Timer.h"
+#include "Animation.h"
 
 Scene* Scene::CurrentScene = nullptr;
 Scene::Scene()
@@ -40,6 +41,7 @@ Scene::Scene()
 	mMeshManager = new MeshManager;
 	mCamera = new Camera;
 	mLog = new LogImpl(Temp);
+	AnimationManager::ThisInstance = new AnimationManager;
 	mCamera->SetProjectionParameters(DegreesToRadians(90), float(WINDOW_WIDTH) / float(WINDOW_HEIGHT), NEAR_PLANE, FAR_PLANE);
 }
 
@@ -55,6 +57,7 @@ Scene::~Scene()
 	SAFE_DELETE(mMeshManager);
 	SAFE_DELETE(mCamera);
 	SAFE_DELETE(mLog);
+	SAFE_DELETE(AnimationManager::ThisInstance);
 	// don't need to delete
 	mBackGroundNode = nullptr;
 }
@@ -90,6 +93,7 @@ bool Scene::GetCameraAnimation() const
 void Scene::Update()
 {
 	mEffectManager->Update();
+	AnimationManager::ThisInstance->Update();
 	if (mCameraAnimation)
 	{
 		// update camera
@@ -255,6 +259,29 @@ void Scene::InitialiseScene()
 	M->SetMaterial(Mat);
 	FlagNode->AttachMesh(M);
 
+	// Bloom
+	Width = 50;
+	Height = 70;
+	BuildQuad(Pos, UV, Width, Height, 0, 0, Width, Height);
+	SceneNode* BloomNode = mRootSceneNode->CreateChild("Bloom_Node", Vector3(-0.7, -0.03, FAR_PLANE - 300), Quaternion::IDENTITY, Vector3(1, 1, 1));
+	M = mMeshManager->CreateQuad("Bloom_Mesh", Pos, UV);
+	Mat = mMaterialManager->CreateMaterial("Bloom_Material_0", SimpleSampleWithBlur);
+	std::string BloomImageFileName = mResourceManager->GetBloomImagePath();
+
+	Tex = mTextureManager->LoadTextureFromFile(BloomImageFileName, mRenderSystem->GetD3d11Device(), BloomImageFileName.c_str(), false);
+
+	Mat->SetTexture(Tex);
+	M->SetMaterial(Mat);
+	BloomNode->AttachMesh(M);
+
+	// Create bloom start animation
+	NodeAnimation* Ani = (NodeAnimation*)AnimationManager::ThisInstance->CreateAnimation("Bloom_Node_Animation", Animation_Node);
+	Ani->SetIsAutoDestroy(true);
+	Ani->AttachNode(BloomNode);
+	Ani->AddPoint(Vector3(-0.7, -0.03, FAR_PLANE - 300), Quaternion::IDENTITY, Vector3(1, 1, 1), 0);
+	Ani->AddPoint(Vector3(-0.5, 0.7, FAR_PLANE - 300), Quaternion::IDENTITY, Vector3(1, 1, 1), 1.7);
+	Ani->AddPoint(Vector3(-0.3, -0.7, FAR_PLANE - 300), Quaternion::IDENTITY, Vector3(1, 1, 1), 3.5);
+	Ani->AddPoint(Vector3(0, -0.03, FAR_PLANE - 300), Quaternion::IDENTITY, Vector3(1, 1, 1), 5.0);
 	// Wall
 	BuildStruct BS;
 	BS.Width = 40;
