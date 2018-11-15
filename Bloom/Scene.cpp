@@ -94,10 +94,15 @@ void Scene::Update()
 {
 	mEffectManager->Update();
 	AnimationManager::ThisInstance->Update();
+	static float CurrentTime = 0.0f;
+	CurrentTime += Timer::GetInstance()->GetDeltaFloat();
+	float BeginTime = 10.0f;
+	if (CurrentTime > BeginTime) mCameraAnimation = true;
+	if (CurrentTime > BeginTime + GAME_TIME - SCREEN_PASS_TIME / 2) mCameraAnimation = false;
 	if (mCameraAnimation)
 	{
 		// update camera
-		float Delta = float(Timer::GetInstance()->GetDelta()) * 0.001;
+		float Delta = Timer::GetInstance()->GetDeltaFloat();
 
 		float xOffset = (Delta / SCREEN_PASS_TIME) * 2.0f;
 		mCamera->Translate(xOffset, 0, 0);

@@ -70,11 +70,11 @@ void GameLogicManager::OnKeyDown(unsigned char Key)
 	Camera* Cam = Scene::GetCurrentScene()->GetCurrentCamera();
 	if (Key == 'A' || Key == 'a')
 	{
-		Cam->RollPitchYaw(0, -0.2, 0);
+		Cam->RollPitchYaw(0, -0.02, 0);
 	}
 	else if (Key == 'D' || Key == 'd')
 	{
-		Cam->RollPitchYaw(0, 0.2, 0);
+		Cam->RollPitchYaw(0, 0.02, 0);
 	}
 }
 
