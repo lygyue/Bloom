@@ -149,6 +149,7 @@
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="Bloom.h" />
+    <ClInclude Include="Collision.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="DataBuffer.h" />
     <ClInclude Include="EffectManager.h" />
@@ -183,6 +184,7 @@
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Bloom.cpp" />
+    <ClCompile Include="Collision.cpp" />
     <ClCompile Include="DataBuffer.cpp" />
     <ClCompile Include="EffectManager.cpp" />
     <ClCompile Include="Functional.cpp" />
