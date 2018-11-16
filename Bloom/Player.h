@@ -1,31 +1,38 @@
 /***********************************************
- * File: GameLogicManager.h
+ * File: Player.h
  *
  * Author: LYG
- * Date: 四月 2018
+ * Date: 十一月 2018
  *
  * Purpose:
  *
  * 
  **********************************************/
 #pragma once
-#include "GameDef.h"
 #include "Common.h"
-#include "Player.h"
 
-class GameLogicManager
+class SceneNode;
+class Player
 {
+	friend class GameLogicManager;
+	enum MoveDirection
+	{
+		MD_Left = 1 << 0,
+		MD_Up = 1 << 1,
+		MD_Right = 1 << 2,
+		MD_Down = 1 << 3,
+	};
 public:
-	GameLogicManager();
-	~GameLogicManager();
+	std::string GetName() const;
+	
+	void SetPlayerSpeed(float Speed);
+	float GetPlayerSpeed() const;
 
-	bool Initialise(HWND hWnd);
+	void SetPlayerNode(SceneNode* SN);
+	SceneNode* GetPlayerNode() const;
 
-	void StartNewGame();
 	void Update();
 
-	Player* GetCurrentPlayer() const;
-public:
 	void OnKeyDown(unsigned char Key);
 	void OnKeyUp(unsigned char Key);
 	void OnLButtonDown(int x, int y, unsigned int wParam);
@@ -36,9 +43,11 @@ public:
 	void OnLButtonDbclk(int x, int y, unsigned int wParam);
 	void OnRButtonDbclk(int x, int y, unsigned int wParam);
 protected:
+	Player(std::string Name);
+	~Player();
 
-	void InitialiseAllResource();
-private:
-
-	Player* mPlayer;
+	SceneNode* mPlayerSceneNode;
+	std::string mName;
+	float mSpeed;
+	unsigned int mMoveDirection;
 };

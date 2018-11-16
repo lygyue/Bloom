@@ -10,26 +10,13 @@
 #include "Math/Vector2.h"
 #include "Timer.h"
 #include "Animation.h"
+#include "GameLogicManager.h"
 
 Scene* Scene::CurrentScene = nullptr;
 Scene::Scene()
 {
+	BuildApplicationPath();
 	mHwnd = nullptr;
-	// Get Current Directory
-	char Temp[MAX_PATH];
-	memset(Temp, 0, MAX_PATH);
-
-	GetModuleFileNameA(NULL, Temp, MAX_PATH);
-	int nLen = strlen(Temp);
-	while (nLen)
-	{
-		if (Temp[nLen] == '\\' || Temp[nLen] == '/')
-		{
-			break;
-		}
-		Temp[nLen--] = '\0';
-	}
-	mApplicationPath = Temp;
 	mBackGroundNode = nullptr;
 	mRootSceneNode = new SceneNode("Root_Scene_Node");
 	mRenderSystem = new RenderSystemD3D11;
@@ -40,8 +27,9 @@ Scene::Scene()
 	mEffectManager = new EffectManager;
 	mMeshManager = new MeshManager;
 	mCamera = new Camera;
-	mLog = new LogImpl(Temp);
+	mLog = new LogImpl(mApplicationPath.c_str());
 	AnimationManager::ThisInstance = new AnimationManager;
+	mGameLogicManager = nullptr;
 	mCamera->SetProjectionParameters(DegreesToRadians(90), float(WINDOW_WIDTH) / float(WINDOW_HEIGHT), NEAR_PLANE, FAR_PLANE);
 }
 
@@ -60,6 +48,25 @@ Scene::~Scene()
 	SAFE_DELETE(AnimationManager::ThisInstance);
 	// don't need to delete
 	mBackGroundNode = nullptr;
+}
+
+void Scene::BuildApplicationPath()
+{
+	// Get Current Directory
+	char Temp[MAX_PATH];
+	memset(Temp, 0, MAX_PATH);
+
+	GetModuleFileNameA(NULL, Temp, MAX_PATH);
+	int nLen = strlen(Temp);
+	while (nLen)
+	{
+		if (Temp[nLen] == '\\' || Temp[nLen] == '/')
+		{
+			break;
+		}
+		Temp[nLen--] = '\0';
+	}
+	mApplicationPath = Temp;
 }
 
 bool Scene::Initialise(HWND hWnd)
@@ -278,6 +285,8 @@ void Scene::InitialiseScene()
 	Mat->SetTexture(Tex);
 	M->SetMaterial(Mat);
 	BloomNode->AttachMesh(M);
+
+	mGameLogicManager->GetCurrentPlayer()->SetPlayerNode(BloomNode);
 
 	// Create bloom start animation
 	NodeAnimation* Ani = (NodeAnimation*)AnimationManager::ThisInstance->CreateAnimation("Bloom_Node_Animation", Animation_Node);

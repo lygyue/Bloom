@@ -141,6 +141,8 @@ public:
 protected:
 	Scene();
 	~Scene();
+
+	void BuildApplicationPath();
 	static Scene* CurrentScene;
 
 	struct BuildStruct
@@ -177,6 +179,8 @@ private:
 	LogImpl* mLog;
 	std::string mApplicationPath;
 	HWND mHwnd;
+
+	GameLogicManager* mGameLogicManager;
 
 	bool mCameraAnimation;
 };

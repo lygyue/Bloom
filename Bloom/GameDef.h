@@ -14,3 +14,4 @@
 // 120 seconds
 #define GAME_TIME			120.0f
 #define SCREEN_PASS_TIME	40.0f
+#define SCREEN_SPEED		(2.0 / SCREEN_PASS_TIME)

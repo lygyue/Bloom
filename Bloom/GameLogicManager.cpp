@@ -18,8 +18,11 @@ GameLogicManager::GameLogicManager()
 {
 	Scene* S = new Scene;
 	Scene::SetCurrentScene(S);
+	S->mGameLogicManager = this;
 	Timer* T = new Timer;
 	Timer::ThisInstance = T;
+
+	mPlayer = new Player("MainPlayer");
 }
 
 GameLogicManager::~GameLogicManager()
@@ -56,7 +59,7 @@ void GameLogicManager::Update()
 {
 	Timer::ThisInstance->Update();
 	Scene::GetCurrentScene()->Update();
-
+	mPlayer->Update();
 }
 
 void GameLogicManager::InitialiseAllResource()
@@ -64,56 +67,52 @@ void GameLogicManager::InitialiseAllResource()
 
 }
 
+Player* GameLogicManager::GetCurrentPlayer() const
+{
+	return mPlayer;
+}
 
 void GameLogicManager::OnKeyDown(unsigned char Key)
 {
-	Camera* Cam = Scene::GetCurrentScene()->GetCurrentCamera();
-	if (Key == 'A' || Key == 'a')
-	{
-		Cam->RollPitchYaw(0, -0.02, 0);
-	}
-	else if (Key == 'D' || Key == 'd')
-	{
-		Cam->RollPitchYaw(0, 0.02, 0);
-	}
+	mPlayer->OnKeyDown(Key);
 }
 
 void GameLogicManager::OnKeyUp(unsigned char Key)
 {
-
+	mPlayer->OnKeyUp(Key);
 }
 
 void GameLogicManager::OnLButtonDown(int x, int y, unsigned int wParam)
 {
-
+	mPlayer->OnLButtonDown(x, y, wParam);
 }
 
 void GameLogicManager::OnLButtonUp(int x, int y, unsigned int wParam)
 {
-
+	mPlayer->OnLButtonUp(x, y, wParam);
 }
 
 void GameLogicManager::OnRButtonDown(int x, int y, unsigned int wParam)
 {
-
+	mPlayer->OnRButtonDown(x, y, wParam);
 }
 
 void GameLogicManager::OnRButtonUp(int x, int y, unsigned int wParam)
 {
-
+	mPlayer->OnRButtonUp(x, y, wParam);
 }
 
 void GameLogicManager::OnLButtonDbclk(int x, int y, unsigned int wParam)
 {
-
+	mPlayer->OnLButtonDbclk(x, y, wParam);
 }
 
 void GameLogicManager::OnRButtonDbclk(int x, int y, unsigned int wParam)
 {
-
+	mPlayer->OnRButtonDbclk(x, y, wParam);
 }
 
 void GameLogicManager::OnMouseMove(int x, int y, unsigned int wParam)
 {
-
+	mPlayer->OnMouseMove(x, y, wParam);
 }
