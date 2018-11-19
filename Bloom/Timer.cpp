@@ -12,6 +12,8 @@
 Timer::Timer()
 : mTimerMask(0)
 , mDelta(0)
+, mFrameIndex(0)
+, mPauseTimer(FALSE)
 {
 	reset();
 }
@@ -40,6 +42,12 @@ bool Timer::Update()
 	unsigned long CurrentTime = getMilliseconds();
 	mDelta = CurrentTime - LastTime;
 	LastTime = CurrentTime;
+	if (mPauseTimer)
+	{
+		mDelta = 0;
+		return true;
+	}
+	mFrameIndex++;
 	// 回调定时器
 	for (unsigned int i = 0; i < mTimerEventList.size(); i++)
 	{
@@ -70,9 +78,24 @@ unsigned long Timer::GetDelta() const
 	return mDelta;
 }
 //-------------------------------------------------------------------------
+unsigned long Timer::GetFrameIndex() const
+{
+	return mFrameIndex;
+}
+//-------------------------------------------------------------------------
 float Timer::GetDeltaFloat() const
 {
 	return float(mDelta) * 0.001f;
+}
+//-------------------------------------------------------------------------
+void Timer::SetPauseTimer(BOOL Pause)
+{
+	mPauseTimer = Pause;
+}
+//-------------------------------------------------------------------------
+BOOL Timer::GetPauseTimer() const
+{
+	return mPauseTimer;
 }
 //-------------------------------------------------------------------------
 void Timer::AddTimer(ITimerListener* Listener, unsigned int EventID, unsigned int Delta)

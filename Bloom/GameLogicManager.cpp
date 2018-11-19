@@ -75,6 +75,12 @@ Player* GameLogicManager::GetCurrentPlayer() const
 void GameLogicManager::OnKeyDown(unsigned char Key)
 {
 	mPlayer->OnKeyDown(Key);
+	static BOOL PauseGame = FALSE;
+	if (Key == VK_SPACE)
+	{
+		PauseGame = !PauseGame;
+		Timer::GetInstance()->SetPauseTimer(PauseGame);
+	}
 }
 
 void GameLogicManager::OnKeyUp(unsigned char Key)

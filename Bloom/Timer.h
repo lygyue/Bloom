@@ -46,6 +46,7 @@ public:
 	// ¸üÐÂ
 	bool Update();
 	unsigned long GetDelta() const;
+	unsigned long GetFrameIndex() const;
 	float GetDeltaFloat() const;
 	/** Returns milliseconds since initialisation or last reset */
 	unsigned long getMilliseconds();
@@ -63,7 +64,8 @@ private:
 	unsigned long getMillisecondsCPU();
 	/** Returns microseconds since initialisation or last reset, only CPU time measured */
 	unsigned long getMicrosecondsCPU();
-
+	void SetPauseTimer(BOOL Pause);
+	BOOL GetPauseTimer() const;
 	DWORD GetTickCount() { return (DWORD)GetTickCount64(); }
 
 	clock_t mZeroClock;
@@ -72,6 +74,8 @@ private:
 	LARGE_INTEGER mStartTime;
 	LARGE_INTEGER mFrequency;
 	unsigned long mDelta;
+	unsigned long mFrameIndex;
+	BOOL mPauseTimer;
 	DWORD_PTR mTimerMask;
 	std::vector<TimerObject> mTimerEventList;
 	std::vector<TimerObject> mTimerEventOnceList;

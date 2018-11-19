@@ -233,6 +233,7 @@ void Scene::BuildRandomSceneNode(BuildStruct& BS)
 		sprintf_s(Name, 128, "%s_%d", BS.MeshName.c_str(), i);
 		SceneNode* SN = mRootSceneNode->CreateChild(Name, Vector3(RangeRandom(0, BackGroundWidth), RangeRandom(-0.8, 0.8), BS.NodeDepth), Quaternion::IDENTITY, Vector3(1, 1, 1));
 		SN->AttachMesh(M);
+
 	}
 }
 

@@ -65,10 +65,16 @@ public:
 	Collision* CreateCollision(Vector3 LocalMax, Vector3 LocalMin, bool IsStatic = true, SceneNode* AttachSceneNode = nullptr);
 	bool DestroyCollision(Collision* C);
 
+	std::vector<Collision*> CalculateCollisionList(Collision* C);
 protected:
 	CollisionManager();
 	~CollisionManager();
+
+	// not need to update every frame.
+	void Update();
 private:
 	std::vector<Collision*> mStaticCollisionArray;
 	std::vector<Collision*> mDynamicCollisionArray;
+
+	unsigned long mCurrentFrameIndex;
 };

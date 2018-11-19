@@ -145,6 +145,13 @@ protected:
 	void BuildApplicationPath();
 	static Scene* CurrentScene;
 
+	struct CollisionInfo
+	{
+		int StartTexCoordX;
+		int StartTexCoordY;
+		int EndTexCoordX;
+		int EndTexCoordY;
+	};
 	struct BuildStruct
 	{
 		int Width;
@@ -158,6 +165,7 @@ protected:
 		std::string MatName;
 		std::string MeshName;
 		std::string TexFullPath;
+		std::vector<CollisionInfo> CollisionList;
 	};
 
 	void BuildQuad(Vector3* Pos, Vector2* UV, int Width, int Height, int UStart, int VStart, int UEnd, int VEnd) const;

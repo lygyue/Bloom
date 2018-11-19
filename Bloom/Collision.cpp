@@ -13,6 +13,7 @@
 #include "Math/Vector3.h"
 #include "Math/Quaternion.h"
 #include "SceneNode.h"
+#include "Timer.h"
 
 Collision::Collision()
 {
@@ -28,12 +29,27 @@ Collision::~Collision()
 
 Collision::RelationShip Collision::Relation(Collision& Other) const
 {
-	return Collision_None;
+	if (mMax.x >= Other.mMax.x && mMax.y >= Other.mMax.y && mMin.x <= Other.mMin.x && mMin.y <= Other.mMin.y)
+	{
+		return Collision_Include;
+	}
+	else if (mMax.x <= Other.mMax.x && mMax.y <= Other.mMax.y && mMin.x >= Other.mMin.x && mMin.y >= Other.mMin.y)
+	{
+		return Collision_BeenIncluded;
+	}
+	else if (mMax.x < Other.mMin.x || mMax.y < Other.mMin.y || mMin.x > Other.mMax.x || mMin.y > Other.mMax.y)
+	{
+		return Collision_None;
+	}
+	return Collision_Intersection;
 }
 
 bool Collision::CollisionTo(Collision& Other) const
 {
-	return false;
+	if(Relation(Other) == Collision_None)
+		return false;
+
+	return true;
 }
 
 void Collision::SetMax(Vector3& Max)
@@ -92,7 +108,7 @@ void Collision::RecalculateCollision()
 
 CollisionManager::CollisionManager()
 {
-
+	mCurrentFrameIndex = -1;
 }
 
 CollisionManager::~CollisionManager()
@@ -157,4 +173,42 @@ bool CollisionManager::DestroyCollision(Collision* C)
 		}
 	}
 	return false;
+}
+
+void CollisionManager::Update()
+{
+	if (mCurrentFrameIndex != Timer::GetInstance()->GetFrameIndex())
+	{
+		mCurrentFrameIndex = Timer::GetInstance()->GetFrameIndex();
+		for (size_t i = 0; i < mDynamicCollisionArray.size(); i++)
+		{
+			mDynamicCollisionArray[i]->RecalculateCollision();
+		}
+	}
+}
+
+std::vector<Collision*> CollisionManager::CalculateCollisionList(Collision* C)
+{
+	Update();
+	std::vector<Collision*> V;
+	for (size_t i = 0; i < mStaticCollisionArray.size(); i++)
+	{
+		if (mStaticCollisionArray[i]->CollisionTo(*C))
+		{
+			V.push_back(mStaticCollisionArray[i]);
+		}
+	}
+
+	for (size_t i = 0; i < mDynamicCollisionArray.size(); i++)
+	{
+		if (mDynamicCollisionArray[i] != C)
+		{
+			if (mDynamicCollisionArray[i]->CollisionTo(*C))
+			{
+				V.push_back(mDynamicCollisionArray[i]);
+			}
+		}
+	}
+
+	return V;
 }
