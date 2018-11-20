@@ -61,6 +61,7 @@ public:
 	int GetChildCount() const;
 	SceneNode* GetChildByIndex(int Index) const;
 	SceneNode* GetChildByName(std::string Name) const;
+	SceneNode* GetParentSceneNode() const;
 
 	Matrix4 GetWorldTransform() const;
 	XMMATRIX GetWorldTransformD3DMath() const;

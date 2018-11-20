@@ -63,3 +63,7 @@ float RangeRandom(float Min, float Max)
 	return (Max - Min)*UnitRandom() + Min;
 }
 
+float Lerp(float t, float a, float b)
+{
+	return a + t * (b - a);
+}

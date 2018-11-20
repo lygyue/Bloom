@@ -266,6 +266,11 @@ SceneNode* SceneNode::GetChildByName(std::string Name) const
 	return nullptr;
 }
 
+SceneNode* SceneNode::GetParentSceneNode() const
+{
+	return mParentNode;
+}
+
 Matrix4 SceneNode::GetWorldTransform() const
 {
 	Matrix4 Mat;

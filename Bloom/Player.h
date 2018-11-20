@@ -12,6 +12,7 @@
 #include "Common.h"
 
 class SceneNode;
+class Collision;
 class Player
 {
 	friend class GameLogicManager;
@@ -31,6 +32,9 @@ public:
 	void SetPlayerNode(SceneNode* SN);
 	SceneNode* GetPlayerNode() const;
 
+	void SetPlayerCollision(Collision* C);
+	Collision* GetPlayerCollision() const;
+
 	void Update();
 
 	void OnKeyDown(unsigned char Key);
@@ -47,6 +51,7 @@ protected:
 	~Player();
 
 	SceneNode* mPlayerSceneNode;
+	Collision* mPlayerCollision;
 	std::string mName;
 	float mSpeed;
 	unsigned int mMoveDirection;

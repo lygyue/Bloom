@@ -15,11 +15,7 @@
 
 RenderGroupManager::RenderGroupManager()
 {
-	for (int i = 0; i <= RenderGroup_Final; i++)
-	{
-		RenderQueue RQ;
-		mRenderGroups.push_back(RQ);
-	}
+
 }
 
 RenderGroupManager::~RenderGroupManager()
@@ -50,7 +46,7 @@ void RenderGroupManager::RemoveSceneNode(SceneNode* SN)
 
 void RenderGroupManager::RenderAllQueue() const
 {
-	for (size_t i = 0; i < mRenderGroups.size(); i++)
+	for (size_t i = 0; i < RenderGroup_Max; i++)
 	{
 		RenderQueue RQ = mRenderGroups[i];
 		for (size_t j = 0; j < RQ.size(); j++)

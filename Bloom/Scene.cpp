@@ -11,6 +11,7 @@
 #include "Timer.h"
 #include "Animation.h"
 #include "GameLogicManager.h"
+#include "Collision.h"
 
 Scene* Scene::CurrentScene = nullptr;
 Scene::Scene()
@@ -28,6 +29,7 @@ Scene::Scene()
 	mMeshManager = new MeshManager;
 	mCamera = new Camera;
 	mLog = new LogImpl(mApplicationPath.c_str());
+	mCollisionManager = new CollisionManager;
 	AnimationManager::ThisInstance = new AnimationManager;
 	mGameLogicManager = nullptr;
 	mCamera->SetProjectionParameters(DegreesToRadians(90), float(WINDOW_WIDTH) / float(WINDOW_HEIGHT), NEAR_PLANE, FAR_PLANE);
@@ -45,6 +47,7 @@ Scene::~Scene()
 	SAFE_DELETE(mMeshManager);
 	SAFE_DELETE(mCamera);
 	SAFE_DELETE(mLog);
+	SAFE_DELETE(mCollisionManager);
 	SAFE_DELETE(AnimationManager::ThisInstance);
 	// don't need to delete
 	mBackGroundNode = nullptr;
@@ -173,6 +176,11 @@ LogImpl* Scene::GetLogImpl() const
 	return mLog;
 }
 
+CollisionManager* Scene::GetCollisionManager() const
+{
+	return mCollisionManager;
+}
+
 std::string Scene::GetApplicationPath() const
 {
 	return mApplicationPath;
@@ -231,9 +239,22 @@ void Scene::BuildRandomSceneNode(BuildStruct& BS)
 	{
 		memset(Name, 0, sizeof(Name));
 		sprintf_s(Name, 128, "%s_%d", BS.MeshName.c_str(), i);
-		SceneNode* SN = mRootSceneNode->CreateChild(Name, Vector3(RangeRandom(0, BackGroundWidth), RangeRandom(-0.8, 0.8), BS.NodeDepth), Quaternion::IDENTITY, Vector3(1, 1, 1));
+		SceneNode* SN = mRootSceneNode->CreateChild(Name, Vector3(RangeRandom(0, BackGroundWidth), RangeRandom(-0.8, 0.8), BS.NodeDepth), Quaternion::IDENTITY, Vector3(1, 1, 1), BS.RG);
 		SN->AttachMesh(M);
+		for (size_t j = 0; j < BS.BlockArray.size(); j++)
+		{
+			Vector3 Max = Vector3::ZERO, Min = Vector3::ZERO;
+			float PercentMinX = float(BS.BlockArray[j].StartTexCoordX - BS.StartTexCoordX) / float(BS.EndTexCoordX - BS.StartTexCoordX);
+			float PercentMaxX = float(BS.BlockArray[j].EndTexCoordX - BS.StartTexCoordX) / float(BS.EndTexCoordX - BS.StartTexCoordX);
+			float PercentMinY = float(BS.BlockArray[j].StartTexCoordY - BS.StartTexCoordY) / float(BS.EndTexCoordY - BS.StartTexCoordY);
+			float PercentMaxY = float(BS.BlockArray[j].EndTexCoordY - BS.StartTexCoordY) / float(BS.EndTexCoordY - BS.StartTexCoordY);
 
+			Min.x = Lerp(PercentMinX, Pos[3].x, Pos[1].x);
+			Min.y = Lerp(PercentMinY, Pos[3].y, Pos[1].y);
+			Max.x = Lerp(PercentMaxX, Pos[3].x, Pos[1].x);
+			Max.y = Lerp(PercentMaxY, Pos[3].y, Pos[1].y);
+			mCollisionManager->CreateCollision(Max, Min, BS.BlockArray[j].IsStatic, SN, BS.BlockArray[j].BP);
+		}			
 	}
 }
 
@@ -276,7 +297,7 @@ void Scene::InitialiseScene()
 	Width = 50;
 	Height = 70;
 	BuildQuad(Pos, UV, Width, Height, 0, 0, Width, Height);
-	SceneNode* BloomNode = mRootSceneNode->CreateChild("Bloom_Node", Vector3(-0.7, -0.03, FAR_PLANE - 300), Quaternion::IDENTITY, Vector3(1, 1, 1));
+	SceneNode* BloomNode = mRootSceneNode->CreateChild("Bloom_Node", Vector3(-0.7, -0.03, FAR_PLANE - 300), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_AfterNormal);
 	M = mMeshManager->CreateQuad("Bloom_Mesh", Pos, UV);
 	Mat = mMaterialManager->CreateMaterial("Bloom_Material_0", SimpleSampleWithBlur);
 	std::string BloomImageFileName = mResourceManager->GetBloomImagePath();
@@ -286,8 +307,9 @@ void Scene::InitialiseScene()
 	Mat->SetTexture(Tex);
 	M->SetMaterial(Mat);
 	BloomNode->AttachMesh(M);
-
+	Collision* C = mCollisionManager->CreateCollision(Pos[1], Pos[3], false, BloomNode, Block_None);
 	mGameLogicManager->GetCurrentPlayer()->SetPlayerNode(BloomNode);
+	mGameLogicManager->GetCurrentPlayer()->SetPlayerCollision(C);
 
 	// Create bloom start animation
 	NodeAnimation* Ani = (NodeAnimation*)AnimationManager::ThisInstance->CreateAnimation("Bloom_Node_Animation", Animation_Node);
@@ -298,18 +320,36 @@ void Scene::InitialiseScene()
 	Ani->AddPoint(Vector3(-0.3, -0.7, FAR_PLANE - 300), Quaternion::IDENTITY, Vector3(1, 1, 1), 3.5);
 	Ani->AddPoint(Vector3(0, -0.03, FAR_PLANE - 300), Quaternion::IDENTITY, Vector3(1, 1, 1), 5.0);
 	// Wall
+	BlockInfo BI;
 	BuildStruct BS;
+	BS.RG = RenderGroup_Normal;
 	BS.Width = 40;
 	BS.Height = 856;
 	BS.SceneNodeCount = 10;
 	BS.StartTexCoordX = BS.StartTexCoordY = 0;
 	BS.EndTexCoordX = 40;
 	BS.EndTexCoordY = 856;
+	BI.BP = Block_Die;
+	BI.IsStatic = true;
+	BI.StartTexCoordX = BI.StartTexCoordY = 0;
+	BI.EndTexCoordX = 20;
+	BI.EndTexCoordY = 30;
+	BS.BlockArray.push_back(BI);
+	BI.StartTexCoordY = 130;
+	BI.EndTexCoordY = 197;
+	BS.BlockArray.push_back(BI);
+	BI.StartTexCoordY = 318;
+	BI.EndTexCoordY = 466;
+	BS.BlockArray.push_back(BI);
+	BI.StartTexCoordY = 526;
+	BI.EndTexCoordY = 852;
+	BS.BlockArray.push_back(BI);
 	BS.NodeDepth = FAR_PLANE - 100;
 	BS.MatName = "Wall_Material_0";
 	BS.MeshName = "Wall_Mesh_0";
 	BS.TexFullPath = mResourceManager->GetWallImagePath();
 	BuildRandomSceneNode(BS);
+	BS.BlockArray.clear();
 	// red apples
 	BS.Width = 730;
 	BS.Height = 260;
@@ -318,11 +358,18 @@ void Scene::InitialiseScene()
 	BS.StartTexCoordY = 84;
 	BS.EndTexCoordX = 136 + 66;
 	BS.EndTexCoordY = 84 + 66;
+	BI.BP = Block_Apple;
+	BI.StartTexCoordX = BS.StartTexCoordX;
+	BI.StartTexCoordY = BS.StartTexCoordY;
+	BI.EndTexCoordX = BS.EndTexCoordX;
+	BI.EndTexCoordY = BS.EndTexCoordY;
+	BS.BlockArray.push_back(BI);
 	BS.NodeDepth = FAR_PLANE - 150;
 	BS.MatName = "Red_Apple_Material_0";
 	BS.MeshName = "Red_Apple_Mesh_0";
 	BS.TexFullPath = mResourceManager->GetApplesImagePath();
 	BuildRandomSceneNode(BS);
+	BS.BlockArray.clear();
 	// yellow apples
 	BS.Width = 730;
 	BS.Height = 260;
@@ -331,11 +378,18 @@ void Scene::InitialiseScene()
 	BS.StartTexCoordY = 84;
 	BS.EndTexCoordX = 200 + 66;
 	BS.EndTexCoordY = 84 + 66;
+	BI.BP = Block_Apple;
+	BI.StartTexCoordX = BS.StartTexCoordX;
+	BI.StartTexCoordY = BS.StartTexCoordY;
+	BI.EndTexCoordX = BS.EndTexCoordX;
+	BI.EndTexCoordY = BS.EndTexCoordY;
+	BS.BlockArray.push_back(BI);
 	BS.NodeDepth = FAR_PLANE - 160;
 	BS.MatName = "Yellow_Apple_Material_0";
 	BS.MeshName = "Yellow_Apple_Mesh_0";
 	BS.TexFullPath = mResourceManager->GetApplesImagePath();
 	BuildRandomSceneNode(BS);
+	BS.BlockArray.clear();
 	// Carmine Circles
 	BS.Width = 730;
 	BS.Height = 260;
@@ -344,11 +398,18 @@ void Scene::InitialiseScene()
 	BS.StartTexCoordY = 28;
 	BS.EndTexCoordX = 370 + 116;
 	BS.EndTexCoordY = 28 + 170;
+	BI.BP = Block_Apple;
+	BI.StartTexCoordX = BS.StartTexCoordX;
+	BI.StartTexCoordY = BS.StartTexCoordY;
+	BI.EndTexCoordX = BS.EndTexCoordX;
+	BI.EndTexCoordY = BS.EndTexCoordY;
+	BS.BlockArray.push_back(BI);
 	BS.NodeDepth = FAR_PLANE - 170;
 	BS.MatName = "Carmine_Circle_Material_0";
 	BS.MeshName = "Carmine_Circle_Mesh_0";
 	BS.TexFullPath = mResourceManager->GetApplesImagePath();
 	BuildRandomSceneNode(BS);
+	BS.BlockArray.clear();
 	// Yellow Circles
 	BS.Width = 730;
 	BS.Height = 260;
@@ -357,12 +418,20 @@ void Scene::InitialiseScene()
 	BS.StartTexCoordY = 28;
 	BS.EndTexCoordX = 522 + 116;
 	BS.EndTexCoordY = 28 + 170;
+	BI.BP = Block_Apple;
+	BI.StartTexCoordX = BS.StartTexCoordX;
+	BI.StartTexCoordY = BS.StartTexCoordY;
+	BI.EndTexCoordX = BS.EndTexCoordX;
+	BI.EndTexCoordY = BS.EndTexCoordY;
+	BS.BlockArray.push_back(BI);
 	BS.NodeDepth = FAR_PLANE - 180;
 	BS.MatName = "Yellow_Circle_Material_0";
 	BS.MeshName = "Yellow_Circle_Mesh_0";
 	BS.TexFullPath = mResourceManager->GetApplesImagePath();
 	BuildRandomSceneNode(BS);
+	BS.BlockArray.clear();
 	// Stars
+	BS.RG = RenderGroup_BeforeNormal;
 	BS.Width = 230;
 	BS.Height = 194;
 	BS.SceneNodeCount = 10;
@@ -370,7 +439,7 @@ void Scene::InitialiseScene()
 	BS.StartTexCoordY = 0;
 	BS.EndTexCoordX = 230;
 	BS.EndTexCoordY = 194;
-	BS.NodeDepth = FAR_PLANE - 190;
+	BS.NodeDepth = FAR_PLANE - 50;
 	BS.MatName = "Star_Material_0";
 	BS.MeshName = "Star_Mesh_0";
 	BS.TexFullPath = mResourceManager->GetStarImagePath();

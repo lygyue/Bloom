@@ -14,6 +14,13 @@
 #include <vector>
 
 class SceneNode;
+enum BlockPro
+{
+	Block_None,
+	Block_Apple,
+	Block_DecreaseLife,
+	Block_Die,
+};
 class Collision
 {
 	friend class CollisionManager;
@@ -41,6 +48,8 @@ public:
 	bool GetIsStatic() const;
 	// this function been called while attach scene node been changed.
 	void RecalculateCollision();
+
+	BlockPro GetBlockProperty() const;
 protected:
 	Collision();
 	~Collision();
@@ -55,6 +64,7 @@ protected:
 	Vector3 mMaxLocalTrasform;
 	Vector3 mMinLocalTransform;
 	SceneNode* mAttachSceneNode;
+	BlockPro mBlockProperty;
 };
 
 // not need to do optimization, may be do this in the future
@@ -62,7 +72,7 @@ class CollisionManager
 {
 	friend class Scene;
 public:
-	Collision* CreateCollision(Vector3 LocalMax, Vector3 LocalMin, bool IsStatic = true, SceneNode* AttachSceneNode = nullptr);
+	Collision* CreateCollision(Vector3 LocalMax, Vector3 LocalMin, bool IsStatic = true, SceneNode* AttachSceneNode = nullptr, BlockPro BP = Block_Die);
 	bool DestroyCollision(Collision* C);
 
 	std::vector<Collision*> CalculateCollisionList(Collision* C);

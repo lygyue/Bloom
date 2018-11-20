@@ -108,7 +108,8 @@ private:
 	XMMATRIX mProjectionMatrix;
 	XMMATRIX mViewProjectionMatrix;
 };
-
+enum BlockPro;
+class CollisionManager;
 class Scene
 {
 	friend class GameLogicManager;
@@ -130,6 +131,7 @@ public:
 	EffectManager* GetEffectManager() const;
 	Camera* GetCurrentCamera() const;
 	LogImpl* GetLogImpl() const;
+	CollisionManager* GetCollisionManager() const;
 
 	std::string GetApplicationPath() const;
 
@@ -144,14 +146,17 @@ protected:
 
 	void BuildApplicationPath();
 	static Scene* CurrentScene;
-
-	struct CollisionInfo
+	struct BlockInfo
 	{
 		int StartTexCoordX;
 		int StartTexCoordY;
 		int EndTexCoordX;
 		int EndTexCoordY;
+
+		bool IsStatic;
+		BlockPro BP;
 	};
+
 	struct BuildStruct
 	{
 		int Width;
@@ -161,11 +166,12 @@ protected:
 		int EndTexCoordX;
 		int EndTexCoordY;
 		int SceneNodeCount;
+		RenderGroup RG;
 		float NodeDepth;
 		std::string MatName;
 		std::string MeshName;
 		std::string TexFullPath;
-		std::vector<CollisionInfo> CollisionList;
+		std::vector<BlockInfo> BlockArray;
 	};
 
 	void BuildQuad(Vector3* Pos, Vector2* UV, int Width, int Height, int UStart, int VStart, int UEnd, int VEnd) const;
@@ -189,6 +195,6 @@ private:
 	HWND mHwnd;
 
 	GameLogicManager* mGameLogicManager;
-
+	CollisionManager* mCollisionManager;
 	bool mCameraAnimation;
 };

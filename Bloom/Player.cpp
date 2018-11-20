@@ -14,6 +14,8 @@
 #include "Math/Vector3.h"
 #include "Timer.h"
 #include "SceneNode.h"
+#include "Scene.h"
+#include "Collision.h"
 
 Player::Player(std::string Name)
 {
@@ -21,6 +23,7 @@ Player::Player(std::string Name)
 	mName = Name;
 	mMoveDirection = 0;
 	mPlayerSceneNode = nullptr;
+	mPlayerCollision = nullptr;
 }
 
 Player::~Player()
@@ -53,6 +56,16 @@ SceneNode* Player::GetPlayerNode() const
 	return mPlayerSceneNode;
 }
 
+void Player::SetPlayerCollision(Collision* C)
+{
+	mPlayerCollision = C;
+}
+
+Collision* Player::GetPlayerCollision() const
+{
+	return mPlayerCollision;
+}
+
 void Player::Update()
 {
 	if (mPlayerSceneNode == nullptr) return;
@@ -73,6 +86,23 @@ void Player::Update()
 		Direction *= mSpeed;
 		Direction *= Delta;
 		mPlayerSceneNode->Translate(Direction);
+	}
+
+	if (Timer::GetInstance()->GetDelta() > 0)
+	{
+		// do a collision detect.
+		std::vector<Collision*> Result;
+		CollisionManager* CM = Scene::GetCurrentScene()->GetCollisionManager();
+		Result = CM->CalculateCollisionList(mPlayerCollision);
+		for each(Collision* C in Result)
+		{
+			if (C->GetBlockProperty() == Block_Apple)
+			{
+				SceneNode* SN = C->GetAttachSceneNode();
+				SN->GetParentSceneNode()->RemoveAndDestroyChild(SN);
+				CM->DestroyCollision(C);
+			}
+		}
 	}
 }
 

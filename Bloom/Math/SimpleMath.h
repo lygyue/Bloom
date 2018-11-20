@@ -101,6 +101,7 @@ extern float InvSqrt(float fValue);
 extern inline float Sqr(float fValue);
 extern float UnitRandom();
 extern float RangeRandom(float Min, float Max);
+extern float Lerp(float t, float a, float b);
 
 class Degree;
 

@@ -17,6 +17,7 @@
 
 Collision::Collision()
 {
+	mBlockProperty = Block_None;
 	mIsStatic = true;
 	mAttachSceneNode = nullptr;
 	mMax = mMin = mMaxLocalTrasform = mMinLocalTransform = Vector3::ZERO;
@@ -104,6 +105,11 @@ void Collision::RecalculateCollision()
 	mMin = Rotation * (mMinLocalTransform * Scale) + Pos;
 }
 
+BlockPro Collision::GetBlockProperty() const
+{
+	return mBlockProperty;
+}
+
 //-----------------------------------------------------------------------
 
 CollisionManager::CollisionManager()
@@ -127,13 +133,14 @@ CollisionManager::~CollisionManager()
 	mDynamicCollisionArray.clear();
 }
 
-Collision* CollisionManager::CreateCollision(Vector3 LocalMax, Vector3 LocalMin, bool IsStatic /* = true */, SceneNode* AttachSceneNode /* = nullptr */)
+Collision* CollisionManager::CreateCollision(Vector3 LocalMax, Vector3 LocalMin, bool IsStatic /* = true */, SceneNode* AttachSceneNode /* = nullptr */, BlockPro BP/* = Block_Die*/)
 {
 	Collision* C = new Collision();
 	C->mIsStatic = IsStatic;
 	C->mAttachSceneNode = AttachSceneNode;
 	C->mMaxLocalTrasform = LocalMax;
 	C->mMinLocalTransform = LocalMin;
+	C->mBlockProperty = BP;
 	C->RecalculateCollision();
 	if (IsStatic)
 	{

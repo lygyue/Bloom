@@ -19,6 +19,7 @@ enum RenderGroup
 	RenderGroup_Normal,
 	RenderGroup_AfterNormal,
 	RenderGroup_Final,
+	RenderGroup_Max,
 };
 
 class SceneNode;
@@ -40,5 +41,5 @@ protected:
 
 	void RenderAllQueue() const;
 private:
-	std::vector<RenderQueue> mRenderGroups;
+	RenderQueue mRenderGroups[RenderGroup_Max];
 };
