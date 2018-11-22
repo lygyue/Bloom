@@ -28,9 +28,8 @@ Scene::Scene()
 	mEffectManager = new EffectManager;
 	mMeshManager = new MeshManager;
 	mCamera = new Camera;
-	mLog = new LogImpl(mApplicationPath.c_str());
 	mCollisionManager = new CollisionManager;
-	AnimationManager::ThisInstance = new AnimationManager;
+	mAnimationManager = new AnimationManager;
 	mGameLogicManager = nullptr;
 	mCamera->SetProjectionParameters(DegreesToRadians(90), float(WINDOW_WIDTH) / float(WINDOW_HEIGHT), NEAR_PLANE, FAR_PLANE);
 }
@@ -46,9 +45,8 @@ Scene::~Scene()
 	SAFE_DELETE(mEffectManager);
 	SAFE_DELETE(mMeshManager);
 	SAFE_DELETE(mCamera);
-	SAFE_DELETE(mLog);
 	SAFE_DELETE(mCollisionManager);
-	SAFE_DELETE(AnimationManager::ThisInstance);
+	SAFE_DELETE(mAnimationManager);
 	// don't need to delete
 	mBackGroundNode = nullptr;
 }
@@ -84,7 +82,7 @@ bool Scene::Initialise(HWND hWnd)
 		return false;
 	}
 	mMaterialManager->Initialise();
-	mBackGroundNode = mRootSceneNode->CreateChild("BackGround_Node", Vector3(0, 0, (FAR_PLANE - 10.0f)), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_BackGroud);
+	mBackGroundNode = mRootSceneNode->CreateChild("BackGround_Node", Vector3(0, 0, RenderGroupManager::GetRenderGroupDepth(RenderGroup_BackGroud)), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_BackGroud);
 	CreateBackGround();
 	InitialiseScene();
 	return true;
@@ -103,7 +101,7 @@ bool Scene::GetCameraAnimation() const
 void Scene::Update()
 {
 	mEffectManager->Update();
-	AnimationManager::ThisInstance->Update();
+	mAnimationManager->Update();
 	static float CurrentTime = 0.0f;
 	CurrentTime += Timer::GetInstance()->GetDeltaFloat();
 	float BeginTime = 10.0f;
@@ -171,14 +169,14 @@ Camera* Scene::GetCurrentCamera() const
 	return mCamera;
 }
 
-LogImpl* Scene::GetLogImpl() const
-{
-	return mLog;
-}
-
 CollisionManager* Scene::GetCollisionManager() const
 {
 	return mCollisionManager;
+}
+
+AnimationManager* Scene::GetAnimationManager() const
+{
+	return mAnimationManager;
 }
 
 std::string Scene::GetApplicationPath() const
@@ -266,7 +264,7 @@ void Scene::InitialiseScene()
 	int Width = 260;
 	int Height = 300;
 	BuildQuad(Pos, UV, Width, Height, 0, 0, Width, Height);
-	SceneNode* StartNode = mRootSceneNode->CreateChild("Start_Node", Vector3(-0.7, 0, FAR_PLANE - 100), Quaternion::IDENTITY, Vector3(1, 1, 1));
+	SceneNode* StartNode = mRootSceneNode->CreateChild("Start_Node", Vector3(-0.7, 0, RenderGroupManager::GetRenderGroupDepth()), Quaternion::IDENTITY, Vector3(1, 1, 1));
 	Mesh* M = mMeshManager->CreateQuad("Start_Mesh", Pos, UV);
 	Material* Mat = mMaterialManager->CreateMaterial("Start_Material_0", SimpleSampleWithBlur);
 	std::string StartImageFileName = mResourceManager->GetStartImagePath();
@@ -282,7 +280,7 @@ void Scene::InitialiseScene()
 	Height = 410;
 	float BackGroundWidth = (GAME_TIME / SCREEN_PASS_TIME) * 2.0f;
 	BuildQuad(Pos, UV, Width, Height, 0, 0, Width, Height);
-	SceneNode* FlagNode = mRootSceneNode->CreateChild("Flag_Node", Vector3(BackGroundWidth - 1, 0, FAR_PLANE - 200), Quaternion::IDENTITY, Vector3(1, 1, 1));
+	SceneNode* FlagNode = mRootSceneNode->CreateChild("Flag_Node", Vector3(BackGroundWidth - 1, 0, RenderGroupManager::GetRenderGroupDepth()), Quaternion::IDENTITY, Vector3(1, 1, 1));
 	M = mMeshManager->CreateQuad("Flag_Mesh", Pos, UV);
 	Mat = mMaterialManager->CreateMaterial("Flag_Material_0", SimpleSampleWithBlur);
 	std::string FlagImageFileName = mResourceManager->GetFlagImagePath();
@@ -297,7 +295,7 @@ void Scene::InitialiseScene()
 	Width = 50;
 	Height = 70;
 	BuildQuad(Pos, UV, Width, Height, 0, 0, Width, Height);
-	SceneNode* BloomNode = mRootSceneNode->CreateChild("Bloom_Node", Vector3(-0.7, -0.03, FAR_PLANE - 300), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_AfterNormal);
+	SceneNode* BloomNode = mRootSceneNode->CreateChild("Bloom_Node", Vector3(-0.7, -0.03, RenderGroupManager::GetRenderGroupDepth(RenderGroup_Player)), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_Player);
 	M = mMeshManager->CreateQuad("Bloom_Mesh", Pos, UV);
 	Mat = mMaterialManager->CreateMaterial("Bloom_Material_0", SimpleSampleWithBlur);
 	std::string BloomImageFileName = mResourceManager->GetBloomImagePath();
@@ -312,7 +310,7 @@ void Scene::InitialiseScene()
 	mGameLogicManager->GetCurrentPlayer()->SetPlayerCollision(C);
 
 	// Create bloom start animation
-	NodeAnimation* Ani = (NodeAnimation*)AnimationManager::ThisInstance->CreateAnimation("Bloom_Node_Animation", Animation_Node);
+	NodeAnimation* Ani = (NodeAnimation*)mAnimationManager->CreateAnimation("Bloom_Node_Animation", Animation_Node);
 	Ani->SetIsAutoDestroy(true);
 	Ani->AttachNode(BloomNode);
 	Ani->AddPoint(Vector3(-0.7, -0.03, FAR_PLANE - 300), Quaternion::IDENTITY, Vector3(1, 1, 1), 0);
@@ -344,7 +342,7 @@ void Scene::InitialiseScene()
 	BI.StartTexCoordY = 526;
 	BI.EndTexCoordY = 852;
 	BS.BlockArray.push_back(BI);
-	BS.NodeDepth = FAR_PLANE - 100;
+	BS.NodeDepth = RenderGroupManager::GetRenderGroupDepth();
 	BS.MatName = "Wall_Material_0";
 	BS.MeshName = "Wall_Mesh_0";
 	BS.TexFullPath = mResourceManager->GetWallImagePath();
@@ -364,7 +362,7 @@ void Scene::InitialiseScene()
 	BI.EndTexCoordX = BS.EndTexCoordX;
 	BI.EndTexCoordY = BS.EndTexCoordY;
 	BS.BlockArray.push_back(BI);
-	BS.NodeDepth = FAR_PLANE - 150;
+	BS.NodeDepth = RenderGroupManager::GetRenderGroupDepth(RenderGroup_AfterNormal);
 	BS.MatName = "Red_Apple_Material_0";
 	BS.MeshName = "Red_Apple_Mesh_0";
 	BS.TexFullPath = mResourceManager->GetApplesImagePath();
@@ -384,7 +382,7 @@ void Scene::InitialiseScene()
 	BI.EndTexCoordX = BS.EndTexCoordX;
 	BI.EndTexCoordY = BS.EndTexCoordY;
 	BS.BlockArray.push_back(BI);
-	BS.NodeDepth = FAR_PLANE - 160;
+	BS.NodeDepth = RenderGroupManager::GetRenderGroupDepth(RenderGroup_AfterNormal);
 	BS.MatName = "Yellow_Apple_Material_0";
 	BS.MeshName = "Yellow_Apple_Mesh_0";
 	BS.TexFullPath = mResourceManager->GetApplesImagePath();
@@ -404,7 +402,7 @@ void Scene::InitialiseScene()
 	BI.EndTexCoordX = BS.EndTexCoordX;
 	BI.EndTexCoordY = BS.EndTexCoordY;
 	BS.BlockArray.push_back(BI);
-	BS.NodeDepth = FAR_PLANE - 170;
+	BS.NodeDepth = RenderGroupManager::GetRenderGroupDepth(RenderGroup_AfterNormal);
 	BS.MatName = "Carmine_Circle_Material_0";
 	BS.MeshName = "Carmine_Circle_Mesh_0";
 	BS.TexFullPath = mResourceManager->GetApplesImagePath();
@@ -424,7 +422,7 @@ void Scene::InitialiseScene()
 	BI.EndTexCoordX = BS.EndTexCoordX;
 	BI.EndTexCoordY = BS.EndTexCoordY;
 	BS.BlockArray.push_back(BI);
-	BS.NodeDepth = FAR_PLANE - 180;
+	BS.NodeDepth = RenderGroupManager::GetRenderGroupDepth(RenderGroup_AfterNormal);
 	BS.MatName = "Yellow_Circle_Material_0";
 	BS.MeshName = "Yellow_Circle_Mesh_0";
 	BS.TexFullPath = mResourceManager->GetApplesImagePath();
@@ -439,7 +437,7 @@ void Scene::InitialiseScene()
 	BS.StartTexCoordY = 0;
 	BS.EndTexCoordX = 230;
 	BS.EndTexCoordY = 194;
-	BS.NodeDepth = FAR_PLANE - 50;
+	BS.NodeDepth = RenderGroupManager::GetRenderGroupDepth(RenderGroup_BeforeNormal);
 	BS.MatName = "Star_Material_0";
 	BS.MeshName = "Star_Mesh_0";
 	BS.TexFullPath = mResourceManager->GetStarImagePath();

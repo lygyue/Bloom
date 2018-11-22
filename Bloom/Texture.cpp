@@ -23,39 +23,38 @@ D3d11Texture::D3d11Texture()
 bool D3d11Texture::Initialise(std::string Name, ID3D11Device* Device, int Width, int Height, DXGI_FORMAT Format, int MipLevel, bool IsRenderTarget, bool CPUAccess)
 {
 	HRESULT err;
-	D3D11_TEXTURE2D_DESC td;
-	memset(&td, 0, sizeof(td));
-	td.Width = Width;
-	td.Height = Height;
-	td.MipLevels = MipLevel;
-	td.ArraySize = 1;
-	td.Format = Format;
-	td.SampleDesc.Count = 1;
-	td.SampleDesc.Quality = 0;
+	memset(&mTextureDesc, 0, sizeof(mTextureDesc));
+	mTextureDesc.Width = Width;
+	mTextureDesc.Height = Height;
+	mTextureDesc.MipLevels = MipLevel;
+	mTextureDesc.ArraySize = 1;
+	mTextureDesc.Format = Format;
+	mTextureDesc.SampleDesc.Count = 1;
+	mTextureDesc.SampleDesc.Quality = 0;
 	if (CPUAccess)
 	{
-		td.Usage = D3D11_USAGE_DYNAMIC;
-		td.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		mTextureDesc.Usage = D3D11_USAGE_DYNAMIC;
+		mTextureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	}
 	else
 	{
-		td.Usage = D3D11_USAGE_DEFAULT;
-		td.CPUAccessFlags = 0;
+		mTextureDesc.Usage = D3D11_USAGE_DEFAULT;
+		mTextureDesc.CPUAccessFlags = 0;
 	}
 
 	if (IsRenderTarget)
 	{
-		td.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-		td.MipLevels = 1;					// must be 1
+		mTextureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+		mTextureDesc.MipLevels = 1;					// must be 1
 	}
 	else
 	{
-		td.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+		mTextureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	}
-	td.MiscFlags = 0;
+	mTextureDesc.MiscFlags = 0;
 
 	ID3D11Texture2D *texVal;
-	if (FAILED(err = Device->CreateTexture2D(&td, NULL, &texVal)))
+	if (FAILED(err = Device->CreateTexture2D(&mTextureDesc, NULL, &texVal)))
 	{
 		OutputDebugStringA(("D3d11Texture::CreateRenderTarget: CreateTexture2D failed"));
 		return false;
@@ -206,6 +205,7 @@ D3d11Texture* TextureManager::LoadTextureFromMemory(std::string Name, ID3D11Devi
 	{
 		return NULL;
 	}
+	Texture->mTexture->GetDesc(&(Texture->mTextureDesc));
 	Texture->mShaderResourceView = srv;
 	Texture->SetName(Name);
 	SAFE_RELEASE(resource);

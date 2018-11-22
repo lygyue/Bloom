@@ -15,6 +15,7 @@
 #include "Functional.h"
 #include "Timer.h"
 #include "SceneNode.h"
+#include "Scene.h"
 
 Animation::Animation(std::string Name)
 {
@@ -133,7 +134,7 @@ void NodeAnimation::Update()
 			mIsEnd = true;
 			if (mIsAutoDestroy)
 			{
-				AnimationManager::GetInstance()->DestroyAnimationNextFrame(this);
+				Scene::GetCurrentScene()->GetAnimationManager()->DestroyAnimationNextFrame(this);
 			}
 			return;
 		}
@@ -171,8 +172,6 @@ void NodeAnimation::Update()
 
 //-----------------------------------------------------------------------
 
-AnimationManager* AnimationManager::ThisInstance = nullptr;
-
 AnimationManager::AnimationManager()
 {
 
@@ -181,11 +180,6 @@ AnimationManager::AnimationManager()
 AnimationManager::~AnimationManager()
 {
 
-}
-
-AnimationManager* AnimationManager::GetInstance()
-{
-	return ThisInstance;
 }
 
 Animation* AnimationManager::CreateAnimation(std::string Name, AnimationType AT)

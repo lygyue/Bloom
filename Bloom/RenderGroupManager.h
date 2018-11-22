@@ -18,6 +18,9 @@ enum RenderGroup
 	RenderGroup_BeforeNormal,
 	RenderGroup_Normal,
 	RenderGroup_AfterNormal,
+	RenderGroup_Player,
+	RenderGroup_UI,
+	RenderGroup_Font,
 	RenderGroup_Final,
 	RenderGroup_Max,
 };
@@ -30,7 +33,7 @@ class RenderGroupManager
 	friend class SceneNode;
 	friend class Scene;
 public:
-
+	static float GetRenderGroupDepth(RenderGroup RG = RenderGroup_Normal);
 
 protected:
 	RenderGroupManager();

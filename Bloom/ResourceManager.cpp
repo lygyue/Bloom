@@ -10,10 +10,12 @@
 #include "ResourceManager.h"
 #include "Scene.h"
 #include "Math/SimpleMath.h"
+#include "Font.h"
 #include <windows.h>
 
 #define Game_BACKGROUND_PATH		"Resource\\BackGround\\"
 #define Game_ASSETS_PATH			"Resource\\Assets\\"
+#define Game_FONT_PATH				"Resource\\Fonts\\"
 #define RESOURCE_WALL				"Wall.png"
 #define RESOURCE_BLOOM				"Bloom.png"
 #define RESOURCE_APPLES				"Apples.png"
@@ -126,4 +128,14 @@ std::string ResourceManager::GetFlagImagePath() const
 std::string ResourceManager::GetBloomImagePath() const
 {
 	return mAssetsPath + RESOURCE_BLOOM;
+}
+
+std::string ResourceManager::GetFontFullPath(FontType FT) const
+{
+	static std::string FontFileNames[FontMax] = {"MFDingHei.ttf", "MFFanSong.ttf", "MFJingYue.ttf", "MFJinHua.ttf", "MFLingYi.ttf", "MFMengYuan.ttf", "MFNianZhen.ttf", "MFSiYan.ttf"
+													 , "MFSuBai.ttf", "MFWenShang.ttf", "MFXingYan.ttf", "MFXiYue.ttf", "MFYiFeng.ttf", "MFYuYi.ttf", "MFZhuoHei.ttf"};
+
+	std::string FileName = mAppPath + Game_FONT_PATH + FontFileNames[FT];
+
+	return FileName;
 }

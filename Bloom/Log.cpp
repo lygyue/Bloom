@@ -11,6 +11,8 @@
 #include "Log.h"
 #include <stdarg.h>
 
+LogImpl* LogImpl::ThisInstance = nullptr;
+
 LogImpl::LogImpl(const char* FilePath)
 {
 	char FileName[256];
@@ -24,6 +26,11 @@ LogImpl::LogImpl(const char* FilePath)
 LogImpl::~LogImpl()
 {
 	fclose(mLogFile);
+}
+
+LogImpl* LogImpl::GetInstance()
+{
+	return ThisInstance;
 }
 
 void LogImpl::Log(std::string Msg)

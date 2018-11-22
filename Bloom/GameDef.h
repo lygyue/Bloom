@@ -15,3 +15,8 @@
 #define GAME_TIME			120.0f
 #define SCREEN_PASS_TIME	40.0f
 #define SCREEN_SPEED		(2.0 / SCREEN_PASS_TIME)
+
+#define	NEAR_PLANE			0.01f
+#define	FAR_PLANE			10000.0f
+
+#define FONT_IMAGE_SIZE		512

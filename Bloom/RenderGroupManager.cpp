@@ -12,6 +12,7 @@
 #include "RenderGroupManager.h"
 #include "SceneNode.h"
 #include "Math/Matrix4.h"
+#include "GameDef.h"
 
 RenderGroupManager::RenderGroupManager()
 {
@@ -21,6 +22,11 @@ RenderGroupManager::RenderGroupManager()
 RenderGroupManager::~RenderGroupManager()
 {
 
+}
+
+float RenderGroupManager::GetRenderGroupDepth(RenderGroup RG/* = RenderGroup_Normal*/)
+{
+	return FAR_PLANE - float(RG + 1) * 100.0f;
 }
 
 void RenderGroupManager::AddSceneNode(SceneNode* SN)

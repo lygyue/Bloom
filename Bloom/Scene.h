@@ -17,10 +17,6 @@
 #include "Texture.h"
 #include "SceneNode.h"
 #include "GameDef.h"
-#include "Log.h"
-
-#define		NEAR_PLANE				0.01f
-#define		FAR_PLANE				10000.0f
 
 class Camera
 {
@@ -110,6 +106,7 @@ private:
 };
 enum BlockPro;
 class CollisionManager;
+class AnimationManager;
 class Scene
 {
 	friend class GameLogicManager;
@@ -130,8 +127,8 @@ public:
 	TextureManager* GetTextureManager() const;
 	EffectManager* GetEffectManager() const;
 	Camera* GetCurrentCamera() const;
-	LogImpl* GetLogImpl() const;
 	CollisionManager* GetCollisionManager() const;
+	AnimationManager* GetAnimationManager() const;
 
 	std::string GetApplicationPath() const;
 
@@ -190,11 +187,11 @@ private:
 	TextureManager* mTextureManager;
 	EffectManager* mEffectManager;
 	Camera* mCamera;
-	LogImpl* mLog;
 	std::string mApplicationPath;
 	HWND mHwnd;
 
 	GameLogicManager* mGameLogicManager;
 	CollisionManager* mCollisionManager;
+	AnimationManager* mAnimationManager;
 	bool mCameraAnimation;
 };

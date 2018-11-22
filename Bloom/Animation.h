@@ -92,12 +92,10 @@ public:
 	bool DestroyAnimation(Animation* Ani);
 	void DestroyAnimationNextFrame(Animation* Ani);
 
-	static AnimationManager* GetInstance();
 protected:
 	AnimationManager();
 	~AnimationManager();
 
-	static AnimationManager* ThisInstance;
 private:
 	std::map<std::string, Animation*> mAnimationMap;
 	std::vector<Animation*> mDelayDestroyArray;

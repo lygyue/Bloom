@@ -13,6 +13,7 @@
 #include "Scene.h"
 #include "Timer.h"
 #include "EffectManager.h"
+#include "Log.h"
 
 GameLogicManager::GameLogicManager()
 {
@@ -21,7 +22,7 @@ GameLogicManager::GameLogicManager()
 	S->mGameLogicManager = this;
 	Timer* T = new Timer;
 	Timer::ThisInstance = T;
-
+	LogImpl::ThisInstance = new LogImpl(S->GetApplicationPath().c_str());
 	mPlayer = new Player("MainPlayer");
 }
 
@@ -31,7 +32,7 @@ GameLogicManager::~GameLogicManager()
 	SAFE_DELETE(S);
 	Scene::SetCurrentScene(nullptr);
 	SAFE_DELETE(Timer::ThisInstance);
-	Timer::ThisInstance = nullptr;
+	SAFE_DELETE(LogImpl::ThisInstance);
 }
 
 bool GameLogicManager::Initialise(HWND hWnd)

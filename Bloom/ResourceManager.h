@@ -13,6 +13,7 @@
 #include "GameDef.h"
 #include <vector>
 
+enum FontType;
 class ResourceManager
 {
 	friend class Scene;
@@ -25,6 +26,9 @@ public:
 	std::string GetFlagImagePath() const;
 	std::string GetBloomImagePath() const;
 	std::string GetApplesImagePath() const;
+
+	// Font Assets
+	std::string GetFontFullPath(FontType FT) const;
 protected:
 	ResourceManager();
 	~ResourceManager();

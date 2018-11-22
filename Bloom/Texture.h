@@ -26,15 +26,15 @@ public:
 	{
 		mName = Name;
 	}
-	ID3D11Texture2D* GetTexture()
+	ID3D11Texture2D* GetTexture() const
 	{
 		return mTexture;
 	}
-	ID3D11RenderTargetView* GetRenderTargetView()
+	ID3D11RenderTargetView* GetRenderTargetView() const
 	{
 		return mRenderTargetView;
 	}
-	ID3D11ShaderResourceView* GetShaderResourceView()
+	ID3D11ShaderResourceView* GetShaderResourceView() const
 	{
 		return mShaderResourceView;
 	}
@@ -42,9 +42,30 @@ public:
 	{
 		return &mShaderResourceView;
 	}
-	DepthBuffer* GetDepthBuffer()
+	DepthBuffer* GetDepthBuffer() const
 	{
 		return mDepthBuffer;
+	}
+
+	unsigned int GetWidth() const
+	{
+		return mTextureDesc.Width;
+	}
+	unsigned int GetHeight() const
+	{
+		return mTextureDesc.Height;
+	}
+	int GetMipLevels() const
+	{
+		return mTextureDesc.MipLevels;
+	}
+	int GetArraySize() const
+	{
+		return mTextureDesc.ArraySize;
+	}
+	DXGI_FORMAT GetTextureFormat() const
+	{
+		return mTextureDesc.Format;
 	}
 
 	bool BlitToTexture(unsigned char* Data, int Len);
@@ -66,6 +87,7 @@ private:
 	std::string						mName;
 	IDXGISurface1*					mSurface;
 	bool							mCpuAccess;
+	D3D11_TEXTURE2D_DESC			mTextureDesc;
 };
 
 class TextureManager
