@@ -107,6 +107,8 @@ private:
 enum BlockPro;
 class CollisionManager;
 class AnimationManager;
+class FontManager;
+class TextManager;
 class Scene
 {
 	friend class GameLogicManager;
@@ -129,6 +131,8 @@ public:
 	Camera* GetCurrentCamera() const;
 	CollisionManager* GetCollisionManager() const;
 	AnimationManager* GetAnimationManager() const;
+	FontManager* GetFontManager() const;
+	TextManager* GetTextManager() const;
 
 	std::string GetApplicationPath() const;
 
@@ -193,5 +197,7 @@ private:
 	GameLogicManager* mGameLogicManager;
 	CollisionManager* mCollisionManager;
 	AnimationManager* mAnimationManager;
+	FontManager* mFontManager;
+	TextManager* mTextManager;
 	bool mCameraAnimation;
 };

@@ -12,6 +12,8 @@
 #include "Animation.h"
 #include "GameLogicManager.h"
 #include "Collision.h"
+#include "Font.h"
+#include "Text.h"
 
 Scene* Scene::CurrentScene = nullptr;
 Scene::Scene()
@@ -30,6 +32,8 @@ Scene::Scene()
 	mCamera = new Camera;
 	mCollisionManager = new CollisionManager;
 	mAnimationManager = new AnimationManager;
+	mFontManager = new FontManager;
+	mTextManager = new TextManager;
 	mGameLogicManager = nullptr;
 	mCamera->SetProjectionParameters(DegreesToRadians(90), float(WINDOW_WIDTH) / float(WINDOW_HEIGHT), NEAR_PLANE, FAR_PLANE);
 }
@@ -47,6 +51,8 @@ Scene::~Scene()
 	SAFE_DELETE(mCamera);
 	SAFE_DELETE(mCollisionManager);
 	SAFE_DELETE(mAnimationManager);
+	SAFE_DELETE(mFontManager);
+	SAFE_DELETE(mTextManager);
 	// don't need to delete
 	mBackGroundNode = nullptr;
 }
@@ -177,6 +183,16 @@ CollisionManager* Scene::GetCollisionManager() const
 AnimationManager* Scene::GetAnimationManager() const
 {
 	return mAnimationManager;
+}
+
+FontManager* Scene::GetFontManager() const
+{
+	return mFontManager;
+}
+
+TextManager* Scene::GetTextManager() const
+{
+	return mTextManager;
 }
 
 std::string Scene::GetApplicationPath() const
@@ -442,6 +458,11 @@ void Scene::InitialiseScene()
 	BS.MeshName = "Star_Mesh_0";
 	BS.TexFullPath = mResourceManager->GetStarImagePath();
 	BuildRandomSceneNode(BS);
+
+	// create start message
+	std::string StartMessage = "»ÆºÓÔ¶ÉÏ°×ÔÆ¼ä";
+	Font* F = mFontManager->GetFont(MFMengYuan, 32);
+	Text* T = mTextManager->CreateText(StartMessage, F, Vector4(1, 1, 1, 1));
 }
 
 void Scene::CreateBackGround()

@@ -75,6 +75,22 @@ bool Font::TextureUsed::AddText(TextInfo& TI, FT_GlyphSlot Glyph)
 		}
 	}
 	// 
+	TI.UVLeftTop = Vector2(float(XOffset) / float(FONT_IMAGE_SIZE), float(YOffset) / float(FONT_IMAGE_SIZE));
+	TI.UVRightBottom = Vector2(float(XOffset + Glyph->bitmap.width) / float(FONT_IMAGE_SIZE), float(YOffset + Glyph->bitmap.rows) / float(FONT_IMAGE_SIZE));
+	TI.Tex = Tex;
+	// write font content to the buffer and blit the buffer to the D3DTexture
+	int TexIndex = 0;
+	for (int i = 0; i < Glyph->bitmap.rows; i++)
+	{
+		for (int j = 0; j < Glyph->bitmap.width; j++)
+		{
+			unsigned char c = Glyph->bitmap.buffer[TexIndex++];
+			int BufferPos = ((YOffset + i) * FONT_IMAGE_SIZE + XOffset + j) * 2;
+			TextureBuffer[BufferPos++] = c;
+			TextureBuffer[BufferPos] = c;
+		}
+	}
+	TI.Tex->BlitToTexture(TextureBuffer, BufferLen);
 	return true;
 }
 
@@ -119,12 +135,47 @@ TextInfo* Font::GetTextInfo(unsigned long CH)
 	if (mTextMap.find(CH) != mTextMap.end())
 	{
 		TI = mTextMap[CH];
+		return TI;
 	}
 	else
 	{
-
+		TI = new TextInfo;
+		TextureUsed* TU = nullptr;
+		if (mTextureUesedArray.size() == 0)
+		{
+			TU = new TextureUsed;
+			mTextureUesedArray.push_back(TU);
+		}
+		else
+		{
+			TU = mTextureUesedArray[mTextureUesedArray.size() - 1];
+		}
+		unsigned int GlyphIndex = FT_Get_Char_Index(mFTFace, CH);
+		FT_Load_Glyph(mFTFace, GlyphIndex, FT_LOAD_RENDER);
+		// may be this code not need ? in the ft document show this but i don't found in it's sample and any other code.
+		if (mFTFace->glyph->format != FT_GLYPH_FORMAT_BITMAP)
+		{
+			FT_Render_Glyph(mFTFace->glyph, FT_RENDER_MODE_NORMAL);
+		}
+		if (TU->AddText(*TI, mFTFace->glyph) == false)
+		{
+			// image is full, need a new texture
+			TU = new TextureUsed;
+			mTextureUesedArray.push_back(TU);
+			TU->AddText(*TI, mFTFace->glyph);
+		}
+		// 64 multiple
+		TI->width = mFTFace->glyph->metrics.width >> 6;
+		TI->height = mFTFace->glyph->metrics.height >> 6;
+		TI->horiBearingX = mFTFace->glyph->metrics.horiBearingX >> 6;
+		TI->horiBearingY = mFTFace->glyph->metrics.horiBearingY >> 6;
+		TI->horiAdvance = mFTFace->glyph->metrics.horiAdvance >> 6;
+		TI->vertBearingX = mFTFace->glyph->metrics.vertBearingX >> 6;
+		TI->vertBearingY = mFTFace->glyph->metrics.vertBearingY >> 6;
+		TI->vertAdvance = mFTFace->glyph->metrics.vertAdvance >> 6;
 	}
-	return nullptr;
+	mTextMap[CH] = TI;
+	return TI;
 }
 
 //-----------------------------------------------------------------------

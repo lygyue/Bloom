@@ -42,7 +42,14 @@ struct TextInfo
 {
 	Vector2 UVLeftTop;
 	Vector2 UVRightBottom;
-
+	int width;
+	int height;
+	int horiBearingX;
+	int horiBearingY;
+	int horiAdvance;
+	int vertBearingX;
+	int vertBearingY;
+	int vertAdvance;
 	D3d11Texture* Tex;
 };
 

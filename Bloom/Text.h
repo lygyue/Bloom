@@ -11,7 +11,9 @@
 #pragma once
 #include "Common.h"
 #include <map>
+#include <vector>
 
+struct TextInfo;
 class Font;
 class Vector4;
 class Mesh;
@@ -30,6 +32,7 @@ protected:
 	Text();
 	~Text();
 
+	bool BuildText(std::vector<TextInfo*>& V, bool Horizontal = true, OriginalMode OM = Original_Center);
 	Mesh* mAttachMesh;
 };
 
@@ -37,11 +40,11 @@ class TextManager
 {
 	friend class Scene;
 public:
-	Text* CreateText(std::string Title, Font*, Vector4 Col);
+	Text* CreateText(std::string Title, Font* FT, Vector4 Col, bool Horizontal = true, Text::OriginalMode OM = Text::Original_Center);
+	bool DestroyText(std::string Title);
 protected:
 	TextManager();
 	~TextManager();
-
 
 	std::map<std::string, Text*> mTextMap;
 };
