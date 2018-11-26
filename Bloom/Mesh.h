@@ -54,6 +54,12 @@ public:
 	Mesh* CreateSphere(std::string Name, int Col, int Row, float Radius);
 	Mesh* CreateBox(std::string Name, const Vector3& V);
 
+	Mesh* CreateMesh(void* VertexBuffer, int VertexElementSize, int VertexCount, void* IndexBuffer, int IndexCount);
+	Mesh* CreateQuad(Vector3* Vertex = nullptr, Vector2* TexCoord = nullptr);
+	Mesh* CreateLine(Vector3* Vertex);
+	Mesh* CreateSphere(int Col, int Row, float Radius);
+	Mesh* CreateBox(const Vector3& V);
+
 	Mesh* GetMeshByName(std::string Name);
 
 	bool DestroyMesh(Mesh* M);
@@ -63,6 +69,8 @@ protected:
 	~MeshManager();
 
 	void DestroyAllMesh();
+	std::string GetAutoName();
 private:
 	std::map<std::string, Mesh*> mMeshArray;
+	int mCurrentMeshIndex;
 };

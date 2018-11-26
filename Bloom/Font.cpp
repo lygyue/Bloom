@@ -91,6 +91,8 @@ bool Font::TextureUsed::AddText(TextInfo& TI, FT_GlyphSlot Glyph)
 		}
 	}
 	TI.Tex->BlitToTexture(TextureBuffer, BufferLen);
+	XOffset += Glyph->bitmap.width;
+	MaxRowHeight = MaxRowHeight < Glyph->bitmap.rows ? Glyph->bitmap.rows : MaxRowHeight;
 	return true;
 }
 

@@ -143,7 +143,7 @@ D3d11Texture* Material::GetMainTexture() const
 {
 	return mTex[mMainTextureIndex];
 }
-
+//-----------------------------------------------------------------------
 MaterialManager::MaterialManager()
 {
 	mShaderManager = new ShaderManager;
@@ -158,6 +158,14 @@ MaterialManager::~MaterialManager()
 		SAFE_DELETE(it->second);
 	}
 	mMaterialArray.clear();
+}
+
+std::string MaterialManager::GetAutoName()
+{
+	char szTemp[128];
+	memset(szTemp, 0, 128);
+	sprintf_s(szTemp, 128, "%s%d", "Material_Auto_Generate_Name_", mCurrentMaterialIndex++);
+	return szTemp;
 }
 
 void MaterialManager::Initialise()
@@ -189,16 +197,12 @@ Material* MaterialManager::CreateMaterial(std::string Name, BaseShader BS)
 		Mat->SetShader(mShaderManager->GetShaderByType(BS));
 	}
 	mMaterialArray[Name] = Mat;
-	mCurrentMaterialIndex++;
 	return Mat;
 }
 
 Material* MaterialManager::CreateMaterial(BaseShader BS)
 {
-	char szTemp[128];
-	memset(szTemp, 0, 128);
-	sprintf_s(szTemp, 128, "%s%d", "Material_Auto_Generate_Name_", mCurrentMaterialIndex);
-	return CreateMaterial(szTemp, BS);
+	return CreateMaterial(GetAutoName(), BS);
 }
 
 Material* MaterialManager::GetMaterialByName(std::string Name)
@@ -227,4 +231,9 @@ void MaterialManager::DestroyMaterial(std::string Name)
 	SAFE_DELETE(M);
 	mMaterialArray.erase(Name);
 	return;
+}
+
+void MaterialManager::DestroyMaterial(Material* Mat)
+{
+	return DestroyMaterial(Mat->GetName());
 }

@@ -20,7 +20,7 @@ enum RenderGroup
 	RenderGroup_AfterNormal,
 	RenderGroup_Player,
 	RenderGroup_UI,
-	RenderGroup_Font,
+	RenderGroup_TEXT,
 	RenderGroup_Final,
 	RenderGroup_Max,
 };

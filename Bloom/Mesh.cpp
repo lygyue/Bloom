@@ -126,10 +126,10 @@ void Mesh::RenderMesh(XMMATRIX& WorldTransform) const
 
 	Context->DrawIndexed(mIndexCount, 0, 0);
 }
-
+//-----------------------------------------------------------------------
 MeshManager::MeshManager()
 {
-
+	mCurrentMeshIndex = 0;
 }
 
 MeshManager::~MeshManager()
@@ -137,9 +137,22 @@ MeshManager::~MeshManager()
 	DestroyAllMesh();
 }
 
+std::string MeshManager::GetAutoName()
+{
+	char szTemp[128];
+	memset(szTemp, 0, 128);
+	sprintf_s(szTemp, 128, "%s%d", "Mesh_Auto_Generate_Name_", mCurrentMeshIndex++);
+	return szTemp;
+}
+
+Mesh* MeshManager::CreateMesh(void* VertexBuffer, int VertexElementSize, int VertexCount, void* IndexBuffer, int IndexCount)
+{
+	return CreateMesh(GetAutoName(), VertexBuffer, VertexElementSize, VertexCount, IndexBuffer, IndexCount);
+}
+
 Mesh* MeshManager::CreateMesh(std::string Name, void* VertexBuffer, int VertexElementSize, int VertexCount, void* IndexBuffer, int IndexCount)
 {
-	if (mMeshArray.find(NULL) != mMeshArray.end())
+	if (mMeshArray.find(Name) != mMeshArray.end())
 	{
 		return mMeshArray[Name];
 	}
@@ -152,6 +165,11 @@ Mesh* MeshManager::CreateMesh(std::string Name, void* VertexBuffer, int VertexEl
 	}
 	SAFE_DELETE(M);
 	return nullptr;
+}
+
+Mesh* MeshManager::CreateQuad(Vector3* Vertex /* = nullptr */, Vector2* TexCoord /* = nullptr */)
+{
+	return CreateQuad(GetAutoName(), Vertex, TexCoord);
 }
 
 Mesh* MeshManager::CreateQuad(std::string Name, Vector3* Vertex/* = nullptr*/, Vector2* TexCoord/* = nullptr*/)
@@ -203,6 +221,11 @@ Mesh* MeshManager::CreateQuad(std::string Name, Vector3* Vertex/* = nullptr*/, V
 	return M;
 }
 
+Mesh* MeshManager::CreateLine(Vector3* Vertex)
+{
+	return CreateLine(GetAutoName(), Vertex);
+}
+
 Mesh* MeshManager::CreateLine(std::string Name, Vector3* Vertex)
 {
 	if (mMeshArray.find(NULL) != mMeshArray.end())
@@ -217,9 +240,19 @@ Mesh* MeshManager::CreateLine(std::string Name, Vector3* Vertex)
 	return M;
 }
 
+Mesh* MeshManager::CreateSphere(int Col, int Row, float Radius)
+{
+	return CreateSphere(GetAutoName(), Col, Row, Radius);
+}
+
 Mesh* MeshManager::CreateSphere(std::string Name, int Col, int Row, float Radius)
 {
 	return nullptr;
+}
+
+Mesh* MeshManager::CreateBox(const Vector3& V)
+{
+	return CreateBox(GetAutoName(), V);
 }
 
 Mesh* MeshManager::CreateBox(std::string Name, const Vector3& V)

@@ -60,11 +60,13 @@ public:
 	Material* GetMaterialByName(std::string Name);
 	Material* GetMaterialByShaderType(BaseShader BS);
 	void DestroyMaterial(std::string Name);
+	void DestroyMaterial(Material* Mat);
 protected:
 	MaterialManager();
 	~MaterialManager();
 
 	void Initialise();
+	std::string GetAutoName();
 private:
 	int mCurrentMaterialIndex;
 	std::map<std::string, Material*> mMaterialArray;

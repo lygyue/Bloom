@@ -44,15 +44,17 @@ Scene::~Scene()
 	SAFE_DELETE(mRenderSystem);
 	SAFE_DELETE(mRenderGroupManager);
 	SAFE_DELETE(mResourceManager);
-	SAFE_DELETE(mMaterialManager);
-	SAFE_DELETE(mTextureManager);
 	SAFE_DELETE(mEffectManager);
-	SAFE_DELETE(mMeshManager);
 	SAFE_DELETE(mCamera);
 	SAFE_DELETE(mCollisionManager);
 	SAFE_DELETE(mAnimationManager);
 	SAFE_DELETE(mFontManager);
 	SAFE_DELETE(mTextManager);
+
+	// must be at the release end order because this is the base element of the scene
+	SAFE_DELETE(mMeshManager);
+	SAFE_DELETE(mMaterialManager);
+	SAFE_DELETE(mTextureManager);
 	// don't need to delete
 	mBackGroundNode = nullptr;
 }
@@ -460,9 +462,12 @@ void Scene::InitialiseScene()
 	BuildRandomSceneNode(BS);
 
 	// create start message
-	std::string StartMessage = "黄河远上白云间";
-	Font* F = mFontManager->GetFont(MFMengYuan, 32);
-	Text* T = mTextManager->CreateText(StartMessage, F, Vector4(1, 1, 1, 1));
+	std::wstring StartMessage = L"黄河远上白云间";
+	Font* F = mFontManager->GetFont(MFMengYuan, 64);
+	Text* T = mTextManager->CreateText(StartMessage, F, Vector4(1, 1, 1, 1), false);
+
+	SceneNode* TextNode1 = mRootSceneNode->CreateChild("Start_Text_Node1", Vector3(0, 0, RenderGroupManager::GetRenderGroupDepth(RenderGroup_TEXT)), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_TEXT);
+	TextNode1->AttachMesh(T->GetAttachMesh());
 }
 
 void Scene::CreateBackGround()
