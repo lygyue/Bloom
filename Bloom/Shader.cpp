@@ -368,21 +368,7 @@ static char* DefaultPixelShaderSrcSimpleFogSimulation =
 "	TexCol = TexCol + (1 - TexCol) * NoiseCol;"
 "	return TexCol;"
 "}";
-#if 0
-static char* DefaultPixelShaderSrcSimpleSampleWhiteAsAlpha =
-"cbuffer SceneConstantBuffer : register(b0)"
-"{"
-"	float4x4 ProjViewWorld;"
-"	float Alpha;"
-"}"
-"Texture2D TextureOut   : register(t0); SamplerState Linear : register(s0); "
-"float4 main(in float4 Position : SV_Position, in float2 TexCoord : TEXCOORD0) : SV_Target"
-"{"
-"	float4 TexCol = TextureOut.Sample(Linear, TexCoord);"
-"	if(TexCol.r > 0.9 && TexCol.g > 0.9 && TexCol.b > 0.9) TexCol.a = 0;"
-"	return TexCol;"
-"}";
-#endif
+
 static char* DefaultPixelShaderSrcSimpleSampleWithBlur =
 "cbuffer SceneConstantBuffer : register(b0)"
 "{"
@@ -411,9 +397,24 @@ static char* DefaultPixelShaderSrcSimpleSampleWithBlur =
 "	return TexCol;"
 "}";
 
+static char* DefaultPixelShaderSrcSimpleFontSample =
+"cbuffer SceneConstantBuffer : register(b0)"
+"{"
+"	float4x4 ProjViewWorld;"
+"	float4 TextColor;"
+"}"
+"Texture2D Texture   : register(t0); SamplerState Linear : register(s0); "
+"float4 main(in float4 Position : SV_Position, in float2 TexCoord : TEXCOORD0) : SV_Target"
+"{"
+"	float2 TexCol = Texture.Sample(Linear, TexCoord).rg; "
+"	float4 Col = TexCol.r * TextColor;"
+"	Col.a = TexCol.g;"
+"	return Col;"
+"}";
+
 std::string StandardShaderName[CutomShader] = { "Simple_Black", "Simple_White", "Simple_Red", "Simple_Green", "Simple_Blue", "Simple_Texture_Sample" ,
 "Simple_Fade","Simple_Fade_In_Out", "Simple_N_B_N", "Simple_L_R_L", "Simple_Elipse_Scale", "Simple_Layer_Alpha", "Simple_Helix", "SimpleLighting", "SimpleInOutAndBlurBlend",
-"Simple_PerlinNoise", "Simple_UScroll", "Simple_FogSimulation", "Simple_SampleWithBlur"};
+"Simple_PerlinNoise", "Simple_UScroll", "Simple_FogSimulation", "Simple_SampleWithBlur", "Simple_FontSample"};
 
 Shader::Shader()
 {
@@ -538,6 +539,7 @@ void ShaderManager::InitialiseStandardShaders()
 	CreateCustomShader(StandardShaderName[SimpleUScroll], DefaultStandardSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleUScroll, ShaderElementFlag);
 	CreateCustomShader(StandardShaderName[SimpleFogSimulation], DefaultStandardSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleFogSimulation, ShaderElementFlag);
 	CreateCustomShader(StandardShaderName[SimpleSampleWithBlur], DefaultStandardSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleSampleWithBlur, ShaderElementFlag);
+	CreateCustomShader(StandardShaderName[SimpleFontSample], DefaultStandardSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleFontSample, ShaderElementFlag);
 }
 
 Shader* ShaderManager::CreateCustomShader(std::string Name, std::string VSD, std::string PSD, unsigned int ShaderElementFlag)

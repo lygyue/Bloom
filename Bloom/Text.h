@@ -38,7 +38,7 @@ protected:
 	Text();
 	~Text();
 
-	bool BuildText(std::vector<TextInfo*>& V, bool Horizontal = true, OriginalMode OM = Original_Center);
+	bool BuildText(std::vector<TextInfo*>& V, Vector4& TextColor, bool Horizontal = true, OriginalMode OM = Original_Center);
 	void BuildTextQuad(QuadStruct* QS, int StartX, int StartY, int EndX, int EndY, TextInfo* TI);
 	Mesh* mAttachMesh;
 };

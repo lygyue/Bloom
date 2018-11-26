@@ -36,6 +36,7 @@ enum BaseShader
 	SimpleUScroll,
 	SimpleFogSimulation,
 	SimpleSampleWithBlur,
+	SimpleFontSample,
 	CutomShader,
 };
 enum ShaderElement

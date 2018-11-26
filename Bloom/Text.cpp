@@ -49,7 +49,7 @@ void Text::BuildTextQuad(QuadStruct* QS, int StartX, int StartY, int EndX, int E
 	return;
 }
 
-bool Text::BuildText(std::vector<TextInfo *>& V, bool Horizontal /* = true */, OriginalMode OM /* = Original_Center */)
+bool Text::BuildText(std::vector<TextInfo *>& V, Vector4& TextColor, bool Horizontal /* = true */, OriginalMode OM /* = Original_Center */)
 {
 	if (V.size() == 0) return false;
 	// not to consider one sentence in multi font textures, in this case is useless.
@@ -100,7 +100,7 @@ bool Text::BuildText(std::vector<TextInfo *>& V, bool Horizontal /* = true */, O
 			}
 		}
 	}
-	Vector3 Translate;
+	Vector3 Translate = Vector3::ZERO;
 	switch (OM)
 	{
 	case Text::Original_Center:
@@ -109,7 +109,6 @@ bool Text::BuildText(std::vector<TextInfo *>& V, bool Horizontal /* = true */, O
 		{
 			HorizontalAdvance /= 2;
 			Translate = Vector3(float(-HorizontalAdvance * 2) / float(WINDOW_WIDTH), 0, 0);
-
 		}
 		else
 		{
@@ -130,7 +129,10 @@ bool Text::BuildText(std::vector<TextInfo *>& V, bool Horizontal /* = true */, O
 	// build mesh and material
 	MeshManager* MM = Scene::GetCurrentScene()->GetMeshManager();
 	mAttachMesh = MM->CreateMesh(QS, sizeof(QuadStruct), V.size() * 4, IndexBuffer, V.size() * 6);
-	Material* Mat = Scene::GetCurrentScene()->GetMaterialManager()->CreateMaterial(SimpleTextureSample);
+	Material* Mat = Scene::GetCurrentScene()->GetMaterialManager()->CreateMaterial(SimpleFontSample);
+	char* TempPtr = Mat->GetConstBufferPointer();
+	memcpy(TempPtr, &TextColor, sizeof(Vector4));
+	Mat->SetConstBufferLen(sizeof(Vector4));
 	TextInfo* TI = V[0];
 	// they all use the same texture in this situation
 	Mat->SetTexture(TI->Tex);
@@ -167,7 +169,7 @@ Text* TextManager::CreateText(std::wstring Title, Font* FT, Vector4 Col, bool Ho
 	}
 
 	Text* T = new Text;
-	if (T->BuildText(TextArray, Horizontal, OM))
+	if (T->BuildText(TextArray, Col, Horizontal, OM))
 	{
 		mTextMap[Title] = T;
 		return T;
