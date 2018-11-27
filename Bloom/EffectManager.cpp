@@ -17,6 +17,7 @@
 #include "Math/Vector2.h"
 #include "Functional.h"
 #include "Math/PerlinNoise.h"
+#include "Math/SimpleMath.h"
 
 Effect::Effect()
 {
@@ -93,7 +94,7 @@ SceneNode* Effect::GetAttachSceneNode() const
 
 float Effect::CalculateCurrentAlpha()
 {
-	mCurrentTime += (Timer::GetInstance()->GetDelta()) * 0.001f;
+	mCurrentTime += Timer::GetInstance()->GetDeltaFloat();
 	float Alpha = 0.0f;
 	if (mCurrentTime >= mTotalTime)
 	{
@@ -455,7 +456,7 @@ void Effect_SeparateTile::Initialise()
 			M->SetMaterial(CurrentMaterial);
 			Node->AttachMesh(M);
 			mAnimationMeshArray.push_back(M);
-			mAnimationRandomCircleArray.push_back(RangeRandom(0, mTotalTime));
+			mAnimationRandomCircleArray.push_back((int)RangeRandom(0, mTotalTime));
 			NodeDepth--;
 		}
 	}
@@ -617,7 +618,7 @@ void EffectShutter::Initialise()
 			SimpleAnimationStruct* SAS = new SimpleAnimationStruct;
 			SAS->StartTime = RangeRandom(0, mTotalTime * 0.25f);
 			SAS->EndTime = RangeRandom(mTotalTime * 0.75f, mTotalTime);
-			SAS->Circles = (int)RangeRandom(1, 4.999);
+			SAS->Circles = (int)RangeRandom(1, 4.999f);
 			SAS->CurrentTime = 0.0f;
 			SAS->RotateVector = Vector3(RangeRandom(-1.0f, 1.0f), RangeRandom(-1.0f, 1.0f), 0).normalisedCopy();
 			mAnimationStructArray.push_back(SAS);
@@ -706,7 +707,7 @@ void EffectLayerAlpha::Update()
 {
 	float Alpha = CalculateCurrentAlpha();
 	int TotalAlphaPixels = mAlphaTextureHeight * mAlphaTextureWidth;
-	int ALphaPixels = TotalAlphaPixels * Alpha;
+	int ALphaPixels = int(TotalAlphaPixels * Alpha);
 	int NeedSetPixels = ALphaPixels - mBeenSetPixels;
 	if (NeedSetPixels == 0)
 	{
@@ -715,7 +716,7 @@ void EffectLayerAlpha::Update()
 	mBeenSetPixels = ALphaPixels;
 	for (int i = 0; i < NeedSetPixels; i++)
 	{
-		int pos = RangeRandom(0, float(mAlphaPixelArray.size()) - 0.001);
+		int pos = (int)RangeRandom(0, float(mAlphaPixelArray.size()) - 0.001f);
 		std::list<int>::iterator it = mAlphaPixelArray.begin();
 		std::advance(it, pos);
 		mAlphaTextureData[*it] = 255;
@@ -935,6 +936,65 @@ void EffectFogSimulation::Update()
 	SetAlphaToConstBuffer(Alpha);
 	return;
 }
+//-----------------------------------------------------------------------
+EffectTextFadeIn::EffectTextFadeIn()
+{
+	mTextColor = Vector4::ZERO;
+	mAlphaStage = nullptr;
+	mTextCount = 0;
+}
+
+EffectTextFadeIn::~EffectTextFadeIn()
+{
+	MaterialManager* MatMgr = Scene::GetCurrentScene()->GetMaterialManager();
+	MatMgr->DestroyMaterial(mAttachMesh->GetMaterial());
+	mAttachMesh->SetMaterial(mOriginalMaterial);
+}
+
+void EffectTextFadeIn::SetTextColor(Vector4& TextColor)
+{
+	mTextColor = TextColor;
+}
+
+void EffectTextFadeIn::SetTextCount(int TextCount)
+{
+	SAFE_DELETE_ARRAY(mAlphaStage);
+	mAlphaStage = new float[TextCount];
+	memset(mAlphaStage, 0, sizeof(float) * TextCount);
+	mTextCount = TextCount;
+}
+
+void EffectTextFadeIn::Initialise()
+{
+	mOriginalMaterial = mAttachMesh->GetMaterial();
+	MaterialManager* MatMgr = Scene::GetCurrentScene()->GetMaterialManager();
+	Material* CurrentMaterial = MatMgr->CreateMaterial(SimpleTextFadeIn);
+
+	CurrentMaterial->SetTexture(mOriginalMaterial->GetTexture(0), 0);
+	mAttachMesh->SetMaterial(CurrentMaterial);
+}
+
+void EffectTextFadeIn::Update()
+{
+	float Alpha = CalculateCurrentAlpha();
+	// Calculate alpha range
+	Alpha *= (float(mTextCount) - 0.00001f);
+	int Pos = (int)ceilf(Alpha);
+	memset(mAlphaStage, 0, sizeof(float) * mTextCount);
+	for (int i = 0; i < Pos; i++)
+	{
+		mAlphaStage[i] = Min(1.0f, Alpha);
+		Alpha--;
+	}
+	Material* Mat = mAttachMesh->GetMaterial();
+	char* TempPtr = Mat->GetConstBufferPointer();
+	int ConstBufferLen = 0;
+	memcpy(TempPtr, &mTextColor, sizeof(Vector4));
+	ConstBufferLen += sizeof(Vector4);
+	memcpy(TempPtr + ConstBufferLen, mAlphaStage, sizeof(float) * mTextCount);
+	ConstBufferLen += sizeof(float) * mTextCount;
+	Mat->SetConstBufferLen(ConstBufferLen);
+}
 
 //-----------------------------------------------------------------------
 EffectManager::EffectManager()
@@ -1057,12 +1117,18 @@ Effect* EffectManager::CreateEffect(std::string Name, Effect_Type ET, float Tota
 		E = new EffectFogSimulation;
 		break;
 	}
+	case Effect_Text_Fade_In_In_Order:
+	{
+		E = new EffectTextFadeIn;
+		break;
+	}
 	default:
 		break;
 	}
 	if (E)
 	{
-		E->mNextTexturePath = NewTexturePath;
+		if(NewTexturePath)
+			E->mNextTexturePath = NewTexturePath;
 		E->SetName(Name);
 		E->mTotalTime = TotalTime;
 		E->mLoop = IsLoop;

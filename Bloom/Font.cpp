@@ -80,9 +80,9 @@ bool Font::TextureUsed::AddText(TextInfo& TI, FT_GlyphSlot Glyph)
 	TI.Tex = Tex;
 	// write font content to the buffer and blit the buffer to the D3DTexture
 	int TexIndex = 0;
-	for (int i = 0; i < Glyph->bitmap.rows; i++)
+	for (int i = 0; i < (int)Glyph->bitmap.rows; i++)
 	{
-		for (int j = 0; j < Glyph->bitmap.width; j++)
+		for (int j = 0; j < (int)Glyph->bitmap.width; j++)
 		{
 			unsigned char c = Glyph->bitmap.buffer[TexIndex++];
 			int BufferPos = ((YOffset + i) * FONT_IMAGE_SIZE + XOffset + j) * 2;
@@ -92,7 +92,7 @@ bool Font::TextureUsed::AddText(TextInfo& TI, FT_GlyphSlot Glyph)
 	}
 	TI.Tex->BlitToTexture(TextureBuffer, BufferLen);
 	XOffset += Glyph->bitmap.width;
-	MaxRowHeight = MaxRowHeight < Glyph->bitmap.rows ? Glyph->bitmap.rows : MaxRowHeight;
+	MaxRowHeight = MaxRowHeight < (int)Glyph->bitmap.rows ? Glyph->bitmap.rows : MaxRowHeight;
 	return true;
 }
 

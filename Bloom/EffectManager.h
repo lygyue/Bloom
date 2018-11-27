@@ -14,7 +14,9 @@
 #include <map>
 #include <xstring>
 #include "Math/SimpleMath.h"
+#include "Math/Vector4.h"
 #include "Math/Vector3.h"
+#include "Math/Vector2.h"
 
 enum Effect_Type
 {
@@ -35,6 +37,7 @@ enum Effect_Type
 	Effect_Fade_In_Out_Blend,			// fade in/out at the same time and in/out texture do a blend
 	Effect_Norma_Brightness_Normal,
 	Effect_Left_Right_Left,
+	Effect_Text_Fade_In_In_Order,
 	Effect_Max,
 };
 //-----------------------------------------------------------------------
@@ -269,6 +272,24 @@ protected:
 
 	virtual void Initialise() override;
 	virtual void Update() override;
+};
+//-----------------------------------------------------------------------
+class EffectTextFadeIn : public Effect
+{
+	friend class EffectManager;
+public:
+	void SetTextColor(Vector4& TextColor);
+	void SetTextCount(int TextCount);
+protected:
+	EffectTextFadeIn();
+	virtual ~EffectTextFadeIn();
+
+	virtual void Initialise() override;
+	virtual void Update() override;
+
+	Vector4 mTextColor;
+	float* mAlphaStage;
+	int mTextCount;
 };
 //-----------------------------------------------------------------------
 class EffectManager

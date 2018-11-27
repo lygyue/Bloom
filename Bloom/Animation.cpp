@@ -153,7 +153,7 @@ void NodeAnimation::Update()
 		}
 	}
 	float t = TimeInterpolate / Length;
-	Vector3 Pos = mSpline->interpolate(Index, t);
+	Vector3 Pos = mSpline->interpolate(int(Index), t);
 
 	Quaternion q1, q2;
 	q1 = mRotations[Index];
@@ -220,6 +220,7 @@ bool AnimationManager::DestroyAnimation(Animation* Ani)
 	
 	SAFE_DELETE(mAnimationMap[Name]);
 	mAnimationMap.erase(Name);
+	return true;
 }
 
 void AnimationManager::DestroyAnimationNextFrame(Animation* Ani)

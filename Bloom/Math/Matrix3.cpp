@@ -5,10 +5,10 @@
 
 // Adapted from Matrix math by Wild Magic http://www.geometrictools.com/
 
-    const float Matrix3::EPSILON = 1e-06;
+    const float Matrix3::EPSILON = 1e-06f;
     const Matrix3 Matrix3::ZERO(0,0,0,0,0,0,0,0,0);
     const Matrix3 Matrix3::IDENTITY(1,0,0,0,1,0,0,0,1);
-    const float Matrix3::msSvdEpsilon = 1e-04;
+    const float Matrix3::msSvdEpsilon = 1e-04f;
     const unsigned int Matrix3::msSvdMaxIterations = 32;
 
     //-----------------------------------------------------------------------
@@ -773,8 +773,8 @@
         // This yields the assertions c[0] < 0 and c[2]*c[2] >= 3*c[1].
 
         // quick out for uniform scale (triple root)
-        const float fOneThird = 1.0/3.0;
-        const float fEpsilon = 1e-06;
+        const float fOneThird = 1.0f/3.0f;
+        const float fEpsilon = 1e-06f;
         float fDiscr = afCoeff[2]*afCoeff[2] - 3.0f*afCoeff[1];
         if ( fDiscr <= fEpsilon )
             return -fOneThird*afCoeff[2];

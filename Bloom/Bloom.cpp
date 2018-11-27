@@ -175,31 +175,31 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		//OnMouseWheel(wParam, lParam);
 		break;
 	case WM_MOUSEMOVE:
-		GLM->OnMouseMove(LOWORD(lParam), HIWORD(lParam), wParam);
+		GLM->OnMouseMove(LOWORD(lParam), HIWORD(lParam), (unsigned int)wParam);
 		break;
 	case WM_LBUTTONDBLCLK:
-		GLM->OnLButtonDbclk(LOWORD(lParam), HIWORD(lParam), wParam);
+		GLM->OnLButtonDbclk(LOWORD(lParam), HIWORD(lParam), (unsigned int)wParam);
 		break;
 	case WM_LBUTTONDOWN:
-		GLM->OnLButtonDown(LOWORD(lParam), HIWORD(lParam), wParam);
+		GLM->OnLButtonDown(LOWORD(lParam), HIWORD(lParam), (unsigned int)wParam);
 		break;
 	case WM_LBUTTONUP:
-		GLM->OnLButtonUp(LOWORD(lParam), HIWORD(lParam), wParam);
+		GLM->OnLButtonUp(LOWORD(lParam), HIWORD(lParam), (unsigned int)wParam);
 		break;
 	case WM_RBUTTONDOWN:
-		GLM->OnRButtonDown(LOWORD(lParam), HIWORD(lParam), wParam);
+		GLM->OnRButtonDown(LOWORD(lParam), HIWORD(lParam), (unsigned int)wParam);
 		break;
 	case WM_RBUTTONUP:
-		GLM->OnRButtonUp(LOWORD(lParam), HIWORD(lParam), wParam);
+		GLM->OnRButtonUp(LOWORD(lParam), HIWORD(lParam), (unsigned int)wParam);
 		break;
 	case WM_RBUTTONDBLCLK:
-		GLM->OnRButtonDbclk(LOWORD(lParam), HIWORD(lParam), wParam);
+		GLM->OnRButtonDbclk(LOWORD(lParam), HIWORD(lParam), (unsigned int)wParam);
 		break;
 	case WM_KEYDOWN:
-		GLM->OnKeyDown(wParam);
+		GLM->OnKeyDown((unsigned char)wParam);
 		break;
 	case WM_KEYUP:
-		GLM->OnKeyUp(wParam);
+		GLM->OnKeyUp((unsigned char)wParam);
 		break;
     case WM_DESTROY:
         PostQuitMessage(0);

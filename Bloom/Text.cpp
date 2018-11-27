@@ -20,6 +20,8 @@
 Text::Text()
 {
 	mAttachMesh = nullptr;
+	mAlignMode = Original_Center;
+	mTextCount = 0;
 }
 
 Text::~Text()
@@ -32,6 +34,16 @@ Text::~Text()
 Mesh* Text::GetAttachMesh() const
 {
 	return mAttachMesh;
+}
+
+int Text::GetTextCount() const
+{
+	return mTextCount;
+}
+
+Text::OriginalMode Text::GetTextAlignMode() const
+{
+	return mAlignMode;
 }
 
 void Text::BuildTextQuad(QuadStruct* QS, int StartX, int StartY, int EndX, int EndY, TextInfo* TI)
@@ -52,9 +64,11 @@ void Text::BuildTextQuad(QuadStruct* QS, int StartX, int StartY, int EndX, int E
 bool Text::BuildText(std::vector<TextInfo *>& V, Vector4& TextColor, bool Horizontal /* = true */, OriginalMode OM /* = Original_Center */)
 {
 	if (V.size() == 0) return false;
+	mTextCount = (int)V.size();
+	mAlignMode = OM;
 	// not to consider one sentence in multi font textures, in this case is useless.
 	// this is a simple game, not a network game, we don't have a chat system, and we have less message to show.
-	int CenterPos = V.size() >> 1;
+	int CenterPos = int(V.size() >> 1);
 	// build first char
 	// see also https://www.freetype.org/freetype2/docs/tutorial/step2.html
 	// use the first character's coordinate system as the whole sentence coordinate.
@@ -76,10 +90,11 @@ bool Text::BuildText(std::vector<TextInfo *>& V, Vector4& TextColor, bool Horizo
 			HorizontalAdvance += V[i]->horiAdvance;
 			QuadStruct VS[4];
 			BuildTextQuad(VS, StartX, StartY, EndX, EndY, V[i]);
+			VS[0].Index = VS[1].Index = VS[2].Index = VS[3].Index = (unsigned int)i;
 			memcpy(&QS[i * 4], VS, sizeof(QuadStruct) * 4);
 			for (int j = 0; j < 6; j++)
 			{
-				IndexBuffer[i * 6 + j] = QuadIndexBuffer[j] + i * 4;
+				IndexBuffer[i * 6 + j] = QuadIndexBuffer[j] + short(i * 4);
 			}
 		}
 		else
@@ -93,10 +108,11 @@ bool Text::BuildText(std::vector<TextInfo *>& V, Vector4& TextColor, bool Horizo
 			VerticalAdvance -= V[i]->vertAdvance;
 			QuadStruct VS[4];
 			BuildTextQuad(VS, StartX, StartY, EndX, EndY, V[i]);
+			VS[0].Index = VS[1].Index = VS[2].Index = VS[3].Index = (unsigned int)i;
 			memcpy(&QS[i * 4], VS, sizeof(QuadStruct) * 4);
 			for (int j = 0; j < 6; j++)
 			{
-				IndexBuffer[i * 6 + j] = QuadIndexBuffer[j] + i * 4;
+				IndexBuffer[i * 6 + j] = QuadIndexBuffer[j] + short(i * 4);
 			}
 		}
 	}
@@ -128,7 +144,7 @@ bool Text::BuildText(std::vector<TextInfo *>& V, Vector4& TextColor, bool Horizo
 	}
 	// build mesh and material
 	MeshManager* MM = Scene::GetCurrentScene()->GetMeshManager();
-	mAttachMesh = MM->CreateMesh(QS, sizeof(QuadStruct), V.size() * 4, IndexBuffer, V.size() * 6);
+	mAttachMesh = MM->CreateMesh(QS, sizeof(QuadStruct), int(V.size() * 4), IndexBuffer, int(V.size() * 6));
 	Material* Mat = Scene::GetCurrentScene()->GetMaterialManager()->CreateMaterial(SimpleFontSample);
 	char* TempPtr = Mat->GetConstBufferPointer();
 	memcpy(TempPtr, &TextColor, sizeof(Vector4));

@@ -37,6 +37,7 @@ enum BaseShader
 	SimpleFogSimulation,
 	SimpleSampleWithBlur,
 	SimpleFontSample,
+	SimpleTextFadeIn,
 	CutomShader,
 };
 enum ShaderElement
@@ -47,6 +48,7 @@ enum ShaderElement
 	Ele_TexCoord2		= 1 << 3,
 	Ele_Normal			= 1 << 4,
 	Ele_Color			= 1 << 5,
+	Ele_BlendIndices	= 1 << 6,
 };
 class Shader
 {

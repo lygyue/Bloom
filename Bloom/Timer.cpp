@@ -61,7 +61,7 @@ bool Timer::Update()
 			mTimerEventList[i].RemainTime %= mTimerEventList[i].Delta;
 		}
 	}
-	for (int i = mTimerEventOnceList.size() - 1; i >= 0; i--)
+	for (int i = (int)mTimerEventOnceList.size() - 1; i >= 0; i--)
 	{
 		mTimerEventOnceList[i].RemainTime += mDelta;
 		if (mTimerEventOnceList[i].RemainTime >= mTimerEventOnceList[i].Delta)

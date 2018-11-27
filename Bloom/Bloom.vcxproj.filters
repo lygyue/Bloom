@@ -1,0 +1,179 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Bloom.cpp" />
+    <ClCompile Include="Functional.cpp" />
+    <ClCompile Include="Log.cpp" />
+    <ClCompile Include="GameLogicManager.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="Math\Matrix3.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\Matrix4.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\Quaternion.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\Vector4.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\Vector3.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\Vector2.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectManager.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="DataBuffer.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderGroupManager.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderSystem.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceManager.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneNode.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\SimpleMath.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Collision.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Font.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Text.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Bloom.h" />
+    <ClInclude Include="Common.h" />
+    <ClInclude Include="Functional.h" />
+    <ClInclude Include="Log.h" />
+    <ClInclude Include="GameDef.h" />
+    <ClInclude Include="GameLogicManager.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="Robot.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="Timer.h" />
+    <ClInclude Include="Math\Matrix3.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Matrix4.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Quaternion.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Vector4.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Vector3.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Vector2.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectManager.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="DataBuffer.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\PerlinNoise.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderGroupManager.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderSystem.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceManager.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneNode.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\SimpleMath.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h" />
+    <ClInclude Include="Collision.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Font.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Text.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Bloom.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Bloom.ico" />
+    <Image Include="small.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Math">
+      <UniqueIdentifier>{0a5922f4-f55b-4d68-8952-b35eea296945}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene">
+      <UniqueIdentifier>{21073932-3c1e-419a-8e00-09f0ba01e8bb}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

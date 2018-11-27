@@ -22,6 +22,16 @@ static char* DefaultStandardSampleVertexShaderSrc =
 "{   oPosition = mul(ProjViewWorld, Position);"
 "	 oTexCoord = TexCoord;}";
 
+// Use this shader as text vertex shader. we can do a in-order fade in effects.
+const char* DefaultTextSampleVertexShaderSrc =
+"float4x4 ProjViewWorld;"
+"void main(in  float4 Position  : POSITION,"
+"		   in  float2 UV : TEXCOORD0,"
+"		   in  uint Index : BLENDINDICES0,"
+"          out float4 oPosition : SV_Position, out float2 oUV: TEXCOORD0, out uint oIndex : BLENDINDICES0)"
+"{   oPosition = mul(ProjViewWorld, Position); "
+"    oUV = UV;  oIndex = Index;}";
+
 static char* DefaultPixelShaderSrcBlack =
 "float4 main(in float4 Position : SV_Position) : SV_Target"
 "{ "
@@ -412,9 +422,26 @@ static char* DefaultPixelShaderSrcSimpleFontSample =
 "	return Col;"
 "}";
 
+static char* DefaultPixelShaderSrcSimpleTextFadeIn =
+"cbuffer SceneConstantBuffer : register(b0)"
+"{"
+"	float4x4 ProjViewWorld;"
+"	float4 TextColor;"
+"	float4 RegionAlpha[8];"
+"}"
+"Texture2D Texture   : register(t0); SamplerState Linear : register(s0); "
+"float4 main(in float4 Position : SV_Position, in float2 TexCoord : TEXCOORD0, in uint Index : BLENDINDICES0) : SV_Target"
+"{"
+"	float2 TexCol = Texture.Sample(Linear, TexCoord).rg; "
+"	float4 Col = TexCol.r * TextColor;"
+"	float a = ((float[4])(RegionAlpha[Index/4]))[Index%4];"
+"	Col.a = TexCol.g * a;"
+"	return Col;"
+"}";
+
 std::string StandardShaderName[CutomShader] = { "Simple_Black", "Simple_White", "Simple_Red", "Simple_Green", "Simple_Blue", "Simple_Texture_Sample" ,
 "Simple_Fade","Simple_Fade_In_Out", "Simple_N_B_N", "Simple_L_R_L", "Simple_Elipse_Scale", "Simple_Layer_Alpha", "Simple_Helix", "SimpleLighting", "SimpleInOutAndBlurBlend",
-"Simple_PerlinNoise", "Simple_UScroll", "Simple_FogSimulation", "Simple_SampleWithBlur", "Simple_FontSample"};
+"Simple_PerlinNoise", "Simple_UScroll", "Simple_FogSimulation", "Simple_SampleWithBlur", "Simple_FontSample", "Simple_TextFadeIn"};
 
 Shader::Shader()
 {
@@ -464,6 +491,11 @@ bool Shader::Initialise(ID3D11Device* Device, std::string VSD, std::string PSD, 
 	{
 		ElementDesc[ElePos++] = { "Color", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, Offset, D3D11_INPUT_PER_VERTEX_DATA, 0 };
 		Offset += 12;
+	}
+	if (ShaderElementFlag & Ele_BlendIndices)
+	{
+		ElementDesc[ElePos++] = { "BLENDINDICES", 0, DXGI_FORMAT_R32_UINT, 0, Offset, D3D11_INPUT_PER_VERTEX_DATA, 0 };
+		Offset += 4;
 	}
 	int numVertexDesc = ElePos;
 	// Create vertex shader
@@ -540,6 +572,8 @@ void ShaderManager::InitialiseStandardShaders()
 	CreateCustomShader(StandardShaderName[SimpleFogSimulation], DefaultStandardSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleFogSimulation, ShaderElementFlag);
 	CreateCustomShader(StandardShaderName[SimpleSampleWithBlur], DefaultStandardSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleSampleWithBlur, ShaderElementFlag);
 	CreateCustomShader(StandardShaderName[SimpleFontSample], DefaultStandardSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleFontSample, ShaderElementFlag);
+	ShaderElementFlag |= Ele_BlendIndices;
+	CreateCustomShader(StandardShaderName[SimpleTextFadeIn], DefaultTextSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleTextFadeIn, ShaderElementFlag);
 }
 
 Shader* ShaderManager::CreateCustomShader(std::string Name, std::string VSD, std::string PSD, unsigned int ShaderElementFlag)

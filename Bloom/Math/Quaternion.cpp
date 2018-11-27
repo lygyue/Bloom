@@ -12,7 +12,7 @@
 #include "Matrix3.h"
 #include "Vector3.h"
 
-    const float Quaternion::msEpsilon = 1e-03;
+    const float Quaternion::msEpsilon = 1e-03f;
     const Quaternion Quaternion::ZERO(0,0,0,0);
     const Quaternion Quaternion::IDENTITY(1,0,0,0);
 
@@ -107,7 +107,7 @@
         float fSqrLength = x*x+y*y+z*z;
         if ( fSqrLength > 0.0 )
         {
-            rfAngle = 2.0*acos(w);
+            rfAngle = 2.0f*float(acos(w));
             float fInvLength = InvSqrt(fSqrLength);
             rkAxis.x = x*fInvLength;
             rkAxis.y = y*fInvLength;

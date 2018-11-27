@@ -66,7 +66,7 @@ void Scene::BuildApplicationPath()
 	memset(Temp, 0, MAX_PATH);
 
 	GetModuleFileNameA(NULL, Temp, MAX_PATH);
-	int nLen = strlen(Temp);
+	int nLen = (int)strlen(Temp);
 	while (nLen)
 	{
 		if (Temp[nLen] == '\\' || Temp[nLen] == '/')
@@ -224,10 +224,10 @@ void Scene::BuildQuad(Vector3* Pos, Vector2* UV, int Width, int Height, int USta
 {
 	float W = float(UEnd - UStart) / float(WINDOW_WIDTH);
 	float H = float(VEnd - VStart) / float(WINDOW_HEIGHT);
-	Pos[0] = Vector3(-W / 2.0, H / 2.0, 0);
-	Pos[1] = Vector3(W / 2.0, H / 2.0, 0);
-	Pos[2] = Vector3(W / 2.0, -H / 2.0, 0);
-	Pos[3] = Vector3(-W / 2.0, -H / 2.0, 0);
+	Pos[0] = Vector3(-W / 2.0f, H / 2.0f, 0);
+	Pos[1] = Vector3(W / 2.0f, H / 2.0f, 0);
+	Pos[2] = Vector3(W / 2.0f, -H / 2.0f, 0);
+	Pos[3] = Vector3(-W / 2.0f, -H / 2.0f, 0);
 	float US = float(UStart) / float(Width);
 	float VS = float(VStart) / float(Height);
 	float UE = float(UEnd) / float(Width);
@@ -255,7 +255,7 @@ void Scene::BuildRandomSceneNode(BuildStruct& BS)
 	{
 		memset(Name, 0, sizeof(Name));
 		sprintf_s(Name, 128, "%s_%d", BS.MeshName.c_str(), i);
-		SceneNode* SN = mRootSceneNode->CreateChild(Name, Vector3(RangeRandom(0, BackGroundWidth), RangeRandom(-0.8, 0.8), BS.NodeDepth), Quaternion::IDENTITY, Vector3(1, 1, 1), BS.RG);
+		SceneNode* SN = mRootSceneNode->CreateChild(Name, Vector3(RangeRandom(0, BackGroundWidth), RangeRandom(-0.8f, 0.8f), BS.NodeDepth), Quaternion::IDENTITY, Vector3(1, 1, 1), BS.RG);
 		SN->AttachMesh(M);
 		for (size_t j = 0; j < BS.BlockArray.size(); j++)
 		{
@@ -282,7 +282,7 @@ void Scene::InitialiseScene()
 	int Width = 260;
 	int Height = 300;
 	BuildQuad(Pos, UV, Width, Height, 0, 0, Width, Height);
-	SceneNode* StartNode = mRootSceneNode->CreateChild("Start_Node", Vector3(-0.7, 0, RenderGroupManager::GetRenderGroupDepth()), Quaternion::IDENTITY, Vector3(1, 1, 1));
+	SceneNode* StartNode = mRootSceneNode->CreateChild("Start_Node", Vector3(-0.7f, 0, RenderGroupManager::GetRenderGroupDepth()), Quaternion::IDENTITY, Vector3(1, 1, 1));
 	Mesh* M = mMeshManager->CreateQuad("Start_Mesh", Pos, UV);
 	Material* Mat = mMaterialManager->CreateMaterial("Start_Material_0", SimpleSampleWithBlur);
 	std::string StartImageFileName = mResourceManager->GetStartImagePath();
@@ -313,7 +313,7 @@ void Scene::InitialiseScene()
 	Width = 50;
 	Height = 70;
 	BuildQuad(Pos, UV, Width, Height, 0, 0, Width, Height);
-	SceneNode* BloomNode = mRootSceneNode->CreateChild("Bloom_Node", Vector3(-0.7, -0.03, RenderGroupManager::GetRenderGroupDepth(RenderGroup_Player)), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_Player);
+	SceneNode* BloomNode = mRootSceneNode->CreateChild("Bloom_Node", Vector3(-0.7f, -0.03f, RenderGroupManager::GetRenderGroupDepth(RenderGroup_Player)), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_Player);
 	M = mMeshManager->CreateQuad("Bloom_Mesh", Pos, UV);
 	Mat = mMaterialManager->CreateMaterial("Bloom_Material_0", SimpleSampleWithBlur);
 	std::string BloomImageFileName = mResourceManager->GetBloomImagePath();
@@ -331,10 +331,10 @@ void Scene::InitialiseScene()
 	NodeAnimation* Ani = (NodeAnimation*)mAnimationManager->CreateAnimation("Bloom_Node_Animation", Animation_Node);
 	Ani->SetIsAutoDestroy(true);
 	Ani->AttachNode(BloomNode);
-	Ani->AddPoint(Vector3(-0.7, -0.03, FAR_PLANE - 300), Quaternion::IDENTITY, Vector3(1, 1, 1), 0);
-	Ani->AddPoint(Vector3(-0.5, 0.7, FAR_PLANE - 300), Quaternion::IDENTITY, Vector3(1, 1, 1), 1.7);
-	Ani->AddPoint(Vector3(-0.3, -0.7, FAR_PLANE - 300), Quaternion::IDENTITY, Vector3(1, 1, 1), 3.5);
-	Ani->AddPoint(Vector3(0, -0.03, FAR_PLANE - 300), Quaternion::IDENTITY, Vector3(1, 1, 1), 5.0);
+	Ani->AddPoint(Vector3(-0.7f, -0.03f, FAR_PLANE - 300), Quaternion::IDENTITY, Vector3(1, 1, 1), 0);
+	Ani->AddPoint(Vector3(-0.5f, 0.7f, FAR_PLANE - 300), Quaternion::IDENTITY, Vector3(1, 1, 1), 1.7f);
+	Ani->AddPoint(Vector3(-0.3f, -0.7f, FAR_PLANE - 300), Quaternion::IDENTITY, Vector3(1, 1, 1), 3.5f);
+	Ani->AddPoint(Vector3(0, -0.03f, FAR_PLANE - 300), Quaternion::IDENTITY, Vector3(1, 1, 1), 5.0f);
 	// Wall
 	BlockInfo BI;
 	BuildStruct BS;
@@ -464,10 +464,13 @@ void Scene::InitialiseScene()
 	// create start message
 	std::wstring StartMessage = L"»ÆºÓÔ¶ÉÏ°×ÔÆ¼ä";
 	Font* F = mFontManager->GetFont(MFMengYuan, 64);
-	Text* T = mTextManager->CreateText(StartMessage, F, Vector4(0.8, 0.5, 0.3, 1), false);
+	Text* T = mTextManager->CreateText(StartMessage, F, Vector4(0.8f, 0.5f, 0.3f, 1), false);
 
 	SceneNode* TextNode1 = mRootSceneNode->CreateChild("Start_Text_Node1", Vector3(0, 0, RenderGroupManager::GetRenderGroupDepth(RenderGroup_TEXT)), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_TEXT);
 	TextNode1->AttachMesh(T->GetAttachMesh());
+	EffectTextFadeIn* E = (EffectTextFadeIn*)mEffectManager->CreateEffect("TextFadeIn_1", Effect_Text_Fade_In_In_Order, 8.0f, false, true, 0.0f, T->GetAttachMesh());
+	E->SetTextColor(Vector4(0.8f, 0.5f, 0.3f, 1));
+	E->SetTextCount(T->GetTextCount());
 }
 
 void Scene::CreateBackGround()

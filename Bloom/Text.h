@@ -26,6 +26,7 @@ class Text
 	{
 		Vector3 Position;
 		Vector2 TexCoord;
+		unsigned int Index;
 	};
 public:
 	enum OriginalMode
@@ -34,6 +35,8 @@ public:
 		Original_Left,
 	};
 	Mesh* GetAttachMesh() const;
+	int GetTextCount() const;
+	Text::OriginalMode GetTextAlignMode() const;
 protected:
 	Text();
 	~Text();
@@ -41,6 +44,8 @@ protected:
 	bool BuildText(std::vector<TextInfo*>& V, Vector4& TextColor, bool Horizontal = true, OriginalMode OM = Original_Center);
 	void BuildTextQuad(QuadStruct* QS, int StartX, int StartY, int EndX, int EndY, TextInfo* TI);
 	Mesh* mAttachMesh;
+	OriginalMode mAlignMode;
+	int mTextCount;
 };
 
 class TextManager

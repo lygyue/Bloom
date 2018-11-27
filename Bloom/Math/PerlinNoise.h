@@ -42,7 +42,7 @@ public:
 
 	void reseed(std::uint32_t seed)
 	{
-		for (size_t i = 0; i < 256; ++i)
+		for (std::int32_t i = 0; i < 256; ++i)
 		{
 			p[i] = i;
 		}

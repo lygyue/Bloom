@@ -61,7 +61,7 @@ void ResourceManager::InitialiseBackGroundImages()
 	{
 		// don't consider as a folder
 		std::string Name = szDirPath;
-		int nLen = strlen(fileData.cFileName);
+		int nLen = (int)strlen(fileData.cFileName);
 		if (nLen > 4)
 		{
 			char szExtern[5];
