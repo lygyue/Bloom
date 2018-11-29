@@ -36,8 +36,16 @@ enum FontType
 
 	FontMax,
 };
-class D3d11Texture;
+enum FontStyle
+{
+	FSNormal,
+	FSBold,
+	FSItalic,
+	FSUnderLine,
+	FSOutline,
+};
 
+class D3d11Texture;
 struct TextInfo
 {
 	Vector2 UVLeftTop;
@@ -76,6 +84,8 @@ class Font
 public:
 	FontType GetFontType() const;
 	unsigned int GetFontSize() const;
+	FontStyle GetFontStyle() const;
+	int GetOutlineWidth() const;
 
 	TextInfo* GetTextInfo(unsigned long CH);
 protected:
@@ -84,6 +94,8 @@ protected:
 
 	FT_Face mFTFace;
 	FontType mFontType;
+	FontStyle mFontStyle;
+	int mOutlineWidth;
 	unsigned int mFontSize;
 	std::map<unsigned long, TextInfo*> mTextMap;
 	std::vector<TextureUsed*> mTextureUesedArray;

@@ -35,7 +35,9 @@ Material::Material(std::string Name)
 
 	// Create rasterizer
 	D3D11_RASTERIZER_DESC rs; memset(&rs, 0, sizeof(rs));
-	rs.AntialiasedLineEnable = rs.DepthClipEnable = true;
+	rs.AntialiasedLineEnable = false;			
+	rs.DepthClipEnable = true;
+	rs.MultisampleEnable = true;				// if this true, rs.AntialiasedLineEnable must be false.
 	rs.CullMode = D3D11_CULL_BACK;
 	rs.FillMode = D3D11_FILL_SOLID;
 	result = Device->CreateRasterizerState(&rs, &mRasterizer);

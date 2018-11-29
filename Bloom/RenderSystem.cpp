@@ -7,6 +7,7 @@
  * 
  */
 #include "RenderSystem.h"
+#include "GameDef.h"
 
 RenderSystemD3D11::RenderSystemD3D11()
 {
@@ -88,7 +89,7 @@ bool RenderSystemD3D11::Initialise(int Width, int Height, HWND Hwnd)
 	scDesc.BufferDesc.RefreshRate.Denominator = 1;
 	scDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	scDesc.OutputWindow = Hwnd;
-	scDesc.SampleDesc.Count = 1;
+	scDesc.SampleDesc.Count = MSAA_LEVEL;
 	scDesc.Windowed = true;
 	scDesc.SwapEffect = DXGI_SWAP_EFFECT_SEQUENTIAL;
 	IDXGISwapChain* SwapChain = NULL;
@@ -100,7 +101,7 @@ bool RenderSystemD3D11::Initialise(int Width, int Height, HWND Hwnd)
 	}
 	mSwapChain1 = (IDXGISwapChain1*)SwapChain;
 	SAFE_RELEASE(DXGIFactory);
-	mBackDepth = new DepthBuffer(mD3dDevice11, Width, Height);
+	mBackDepth = new DepthBuffer(mD3dDevice11, Width, Height, MSAA_LEVEL);
 	mSwapChain1->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&mBackTexture);
 	hr = mD3dDevice11->CreateRenderTargetView(mBackTexture, NULL, &mBackRenderTargetView);
 	mDX11DeviceContext->OMSetRenderTargets(1, &mBackRenderTargetView, mBackDepth->TexDsv);

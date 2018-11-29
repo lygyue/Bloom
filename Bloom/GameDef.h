@@ -20,3 +20,5 @@
 #define	FAR_PLANE			10000.0f
 
 #define FONT_IMAGE_SIZE		512
+
+#define MSAA_LEVEL			4

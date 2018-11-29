@@ -331,10 +331,10 @@ void Scene::InitialiseScene()
 	NodeAnimation* Ani = (NodeAnimation*)mAnimationManager->CreateAnimation("Bloom_Node_Animation", Animation_Node);
 	Ani->SetIsAutoDestroy(true);
 	Ani->AttachNode(BloomNode);
-	Ani->AddPoint(Vector3(-0.7f, -0.03f, FAR_PLANE - 300), Quaternion::IDENTITY, Vector3(1, 1, 1), 0);
-	Ani->AddPoint(Vector3(-0.5f, 0.7f, FAR_PLANE - 300), Quaternion::IDENTITY, Vector3(1, 1, 1), 1.7f);
-	Ani->AddPoint(Vector3(-0.3f, -0.7f, FAR_PLANE - 300), Quaternion::IDENTITY, Vector3(1, 1, 1), 3.5f);
-	Ani->AddPoint(Vector3(0, -0.03f, FAR_PLANE - 300), Quaternion::IDENTITY, Vector3(1, 1, 1), 5.0f);
+	Ani->AddPoint(Vector3(-0.7f, -0.03f, RenderGroupManager::GetRenderGroupDepth(RenderGroup_Player)), Quaternion::IDENTITY, Vector3(1, 1, 1), 0);
+	Ani->AddPoint(Vector3(-0.5f, 0.7f, RenderGroupManager::GetRenderGroupDepth(RenderGroup_Player)), Quaternion::IDENTITY, Vector3(1, 1, 1), 1.7f);
+	Ani->AddPoint(Vector3(-0.3f, -0.7f, RenderGroupManager::GetRenderGroupDepth(RenderGroup_Player)), Quaternion::IDENTITY, Vector3(1, 1, 1), 3.5f);
+	Ani->AddPoint(Vector3(0, -0.03f, RenderGroupManager::GetRenderGroupDepth(RenderGroup_Player)), Quaternion::IDENTITY, Vector3(1, 1, 1), 5.0f);
 	// Wall
 	BlockInfo BI;
 	BuildStruct BS;

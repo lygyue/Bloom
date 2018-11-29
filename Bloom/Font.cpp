@@ -29,6 +29,7 @@ Font::TextureUsed::TextureUsed()
 	TextureBuffer = nullptr;
 	BufferLen = 0;
 	Tex = nullptr;
+
 	memset(FontTextureName, 0, sizeof(FontTextureName));
 	sprintf_s(FontTextureName, sizeof(FontTextureName), "Font_Texture_%d", TextureIndex++);
 }
@@ -102,6 +103,8 @@ Font::Font()
 	mFTFace = nullptr;
 	mFontType = MFMengYuan;
 	mFontSize = 0;
+	mFontStyle = FSNormal;
+	mOutlineWidth = 0;
 }
 
 Font::~Font()
@@ -129,6 +132,16 @@ FontType Font::GetFontType() const
 unsigned int Font::GetFontSize() const
 {
 	return mFontSize;
+}
+
+FontStyle Font::GetFontStyle() const
+{
+	return mFontStyle;
+}
+
+int Font::GetOutlineWidth() const
+{
+	return mOutlineWidth;
 }
 
 TextInfo* Font::GetTextInfo(unsigned long CH)
