@@ -39,7 +39,7 @@ Font::TextureUsed::~TextureUsed()
 	SAFE_DELETE_ARRAY(TextureBuffer);
 }
 
-bool Font::TextureUsed::AddText(TextInfo& TI, FT_GlyphSlot Glyph)
+bool Font::TextureUsed::AddText(TextInfo& TI, FT_Bitmap& BitMap)
 {
 	if (Tex == nullptr)
 	{
@@ -53,7 +53,7 @@ bool Font::TextureUsed::AddText(TextInfo& TI, FT_GlyphSlot Glyph)
 	else
 	{
 		// Detect if Tex is full
-		if (YOffset + Glyph->bitmap.rows >= FONT_IMAGE_SIZE)
+		if (YOffset + BitMap.rows >= FONT_IMAGE_SIZE)
 		{
 			// image is full
 			// don't need this buffer now, release.
@@ -61,13 +61,13 @@ bool Font::TextureUsed::AddText(TextInfo& TI, FT_GlyphSlot Glyph)
 			return false;
 		}
 	}
-	if (XOffset + Glyph->bitmap.width >= FONT_IMAGE_SIZE)
+	if (XOffset + BitMap.width >= FONT_IMAGE_SIZE)
 	{
 		// next row
 		XOffset = 0;
 		YOffset += MaxRowHeight;
-		MaxRowHeight = Glyph->bitmap.rows;
-		if (YOffset + Glyph->bitmap.rows >= FONT_IMAGE_SIZE)
+		MaxRowHeight = BitMap.rows;
+		if (YOffset + BitMap.rows >= FONT_IMAGE_SIZE)
 		{
 			// image is full
 			// don't need this buffer now, release.
@@ -77,30 +77,32 @@ bool Font::TextureUsed::AddText(TextInfo& TI, FT_GlyphSlot Glyph)
 	}
 	// 
 	TI.UVLeftTop = Vector2(float(XOffset) / float(FONT_IMAGE_SIZE), float(YOffset) / float(FONT_IMAGE_SIZE));
-	TI.UVRightBottom = Vector2(float(XOffset + Glyph->bitmap.width) / float(FONT_IMAGE_SIZE), float(YOffset + Glyph->bitmap.rows) / float(FONT_IMAGE_SIZE));
+	TI.UVRightBottom = Vector2(float(XOffset + BitMap.width) / float(FONT_IMAGE_SIZE), float(YOffset + BitMap.rows) / float(FONT_IMAGE_SIZE));
 	TI.Tex = Tex;
 	// write font content to the buffer and blit the buffer to the D3DTexture
 	int TexIndex = 0;
-	for (int i = 0; i < (int)Glyph->bitmap.rows; i++)
+	for (int i = 0; i < (int)BitMap.rows; i++)
 	{
-		for (int j = 0; j < (int)Glyph->bitmap.width; j++)
+		for (int j = 0; j < (int)BitMap.width; j++)
 		{
-			unsigned char c = Glyph->bitmap.buffer[TexIndex++];
+			unsigned char c = BitMap.buffer[TexIndex++];
 			int BufferPos = ((YOffset + i) * FONT_IMAGE_SIZE + XOffset + j) * 2;
 			TextureBuffer[BufferPos++] = c;
 			TextureBuffer[BufferPos] = c;
 		}
 	}
 	TI.Tex->BlitToTexture(TextureBuffer, BufferLen);
-	XOffset += Glyph->bitmap.width;
-	MaxRowHeight = MaxRowHeight < (int)Glyph->bitmap.rows ? Glyph->bitmap.rows : MaxRowHeight;
+	XOffset += BitMap.width;
+	MaxRowHeight = MaxRowHeight < (int)BitMap.rows ? BitMap.rows : MaxRowHeight;
 	return true;
 }
 
  //-----------------------------------------------------------------------
 Font::Font()
 {
+	mFTLibrary = nullptr;
 	mFTFace = nullptr;
+	mFTStroker = nullptr;
 	mFontType = MFMengYuan;
 	mFontSize = 0;
 	mFontStyle = FSNormal;
@@ -120,6 +122,12 @@ Font::~Font()
 		SAFE_DELETE(it->second);
 	}
 	mTextMap.clear();
+	if (mFTStroker)
+	{
+		FT_Stroker_Done(mFTStroker);
+		mFTStroker = nullptr;
+	}
+
 	FT_Done_Face(mFTFace);
 	mFTFace = nullptr;
 }
@@ -134,7 +142,7 @@ unsigned int Font::GetFontSize() const
 	return mFontSize;
 }
 
-FontStyle Font::GetFontStyle() const
+unsigned int Font::GetFontStyle() const
 {
 	return mFontStyle;
 }
@@ -154,6 +162,12 @@ TextInfo* Font::GetTextInfo(unsigned long CH)
 	}
 	else
 	{
+		if (mFTStroker == nullptr && mFontStyle & FSOutline && mOutlineWidth > 0)
+		{
+			FT_Stroker_New(mFTLibrary, &mFTStroker);
+			//  2 * 64 result in 2px outline
+			FT_Stroker_Set(mFTStroker, mOutlineWidth * 64, FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
+		}
 		TI = new TextInfo;
 		TextureUsed* TU = nullptr;
 		if (mTextureUesedArray.size() == 0)
@@ -166,28 +180,65 @@ TextInfo* Font::GetTextInfo(unsigned long CH)
 			TU = mTextureUesedArray[mTextureUesedArray.size() - 1];
 		}
 		unsigned int GlyphIndex = FT_Get_Char_Index(mFTFace, CH);
-		FT_Load_Glyph(mFTFace, GlyphIndex, FT_LOAD_RENDER);
-		// may be this code not need ? in the ft document show this but i don't found in it's sample and any other code.
-		if (mFTFace->glyph->format != FT_GLYPH_FORMAT_BITMAP)
+		if (mFontStyle & FSOutline)
 		{
-			FT_Render_Glyph(mFTFace->glyph, FT_RENDER_MODE_NORMAL);
+			// add outline
+			FT_Load_Glyph(mFTFace, GlyphIndex, FT_LOAD_DEFAULT);
+			FT_Glyph glyph;
+			FT_Get_Glyph(mFTFace->glyph, &glyph);
+			FT_Glyph_StrokeBorder(&glyph, mFTStroker, false, true);
+			FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, nullptr, true);
+			FT_BitmapGlyph bitmapGlyph = reinterpret_cast<FT_BitmapGlyph>(glyph);
+
+			if (bitmapGlyph)
+			{
+				if (TU->AddText(*TI, bitmapGlyph->bitmap) == false)
+				{
+					// image is full, need a new texture
+					TU = new TextureUsed;
+					mTextureUesedArray.push_back(TU);
+					TU->AddText(*TI, bitmapGlyph->bitmap);
+				}
+				TU->AddText(*TI, bitmapGlyph->bitmap);
+				// 64 multiple
+				TI->width = (mFTFace->glyph->metrics.width >> 6) + mOutlineWidth * 2;
+				TI->height = (mFTFace->glyph->metrics.height >> 6) + mOutlineWidth * 2;
+				TI->horiBearingX = mFTFace->glyph->metrics.horiBearingX >> 6;
+				TI->horiBearingY = (mFTFace->glyph->metrics.horiBearingY >> 6) + mOutlineWidth;
+				TI->horiAdvance = (mFTFace->glyph->metrics.horiAdvance >> 6) + mOutlineWidth * 2;
+				TI->vertBearingX = (mFTFace->glyph->metrics.vertBearingX >> 6) + mOutlineWidth;
+				TI->vertBearingY = mFTFace->glyph->metrics.vertBearingY >> 6;
+				TI->vertAdvance = (mFTFace->glyph->metrics.vertAdvance >> 6) + mOutlineWidth * 2;
+				// Clean up afterwards.
+				FT_Done_Glyph(glyph);
+			}
 		}
-		if (TU->AddText(*TI, mFTFace->glyph) == false)
+		else
 		{
-			// image is full, need a new texture
-			TU = new TextureUsed;
-			mTextureUesedArray.push_back(TU);
-			TU->AddText(*TI, mFTFace->glyph);
+			FT_Load_Glyph(mFTFace, GlyphIndex, FT_LOAD_RENDER);
+			// may be this code not need ? in the ft document show this but i don't found in it's sample and any other code.
+			if (mFTFace->glyph->format != FT_GLYPH_FORMAT_BITMAP)
+			{
+				FT_Render_Glyph(mFTFace->glyph, FT_RENDER_MODE_NORMAL);
+			}
+			if (TU->AddText(*TI, mFTFace->glyph->bitmap) == false)
+			{
+				// image is full, need a new texture
+				TU = new TextureUsed;
+				mTextureUesedArray.push_back(TU);
+				TU->AddText(*TI, mFTFace->glyph->bitmap);
+			}
+
+			// 64 multiple
+			TI->width = mFTFace->glyph->metrics.width >> 6;
+			TI->height = mFTFace->glyph->metrics.height >> 6;
+			TI->horiBearingX = mFTFace->glyph->metrics.horiBearingX >> 6;
+			TI->horiBearingY = mFTFace->glyph->metrics.horiBearingY >> 6;
+			TI->horiAdvance = mFTFace->glyph->metrics.horiAdvance >> 6;
+			TI->vertBearingX = mFTFace->glyph->metrics.vertBearingX >> 6;
+			TI->vertBearingY = mFTFace->glyph->metrics.vertBearingY >> 6;
+			TI->vertAdvance = mFTFace->glyph->metrics.vertAdvance >> 6;
 		}
-		// 64 multiple
-		TI->width = mFTFace->glyph->metrics.width >> 6;
-		TI->height = mFTFace->glyph->metrics.height >> 6;
-		TI->horiBearingX = mFTFace->glyph->metrics.horiBearingX >> 6;
-		TI->horiBearingY = mFTFace->glyph->metrics.horiBearingY >> 6;
-		TI->horiAdvance = mFTFace->glyph->metrics.horiAdvance >> 6;
-		TI->vertBearingX = mFTFace->glyph->metrics.vertBearingX >> 6;
-		TI->vertBearingY = mFTFace->glyph->metrics.vertBearingY >> 6;
-		TI->vertAdvance = mFTFace->glyph->metrics.vertAdvance >> 6;
 	}
 	mTextMap[CH] = TI;
 	return TI;
@@ -210,11 +261,11 @@ FontManager::~FontManager()
 	FT_Done_FreeType(mFTLibrary);
 }
 
-Font* FontManager::GetFont(FontType FT, unsigned int FontSize)
+Font* FontManager::GetFont(FontType FT, unsigned int FontSize, unsigned int FontStyle/* = FSNormal*/, int OutLineWidth/* = 0*/)
 {
 	for each(Font* F in mFontArray)
 	{
-		if (F->GetFontType() == FT && F->GetFontSize() == FontSize)
+		if (F->GetFontType() == FT && F->GetFontSize() == FontSize && F->GetFontStyle() == FontStyle && F->GetOutlineWidth() == OutLineWidth)
 		{
 			return F;
 		}
@@ -240,6 +291,9 @@ Font* FontManager::GetFont(FontType FT, unsigned int FontSize)
 	error = FT_Set_Char_Size(F->mFTFace, FontSize * 64, FontSize * 64, 96, 96);
 	F->mFontSize = FontSize;
 	F->mFontType = FT;
+	F->mFTLibrary = mFTLibrary;
+	F->mFontStyle = FontStyle;
+	F->mOutlineWidth = OutLineWidth;
 	error = FT_Select_Charmap(F->mFTFace, FT_ENCODING_UNICODE);
 
 	mFontArray.push_back(F);

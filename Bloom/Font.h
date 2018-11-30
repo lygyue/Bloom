@@ -13,6 +13,7 @@
 #include <map>
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include FT_STROKER_H
 
 #include "Math/Vector2.h"
 
@@ -38,11 +39,11 @@ enum FontType
 };
 enum FontStyle
 {
-	FSNormal,
-	FSBold,
-	FSItalic,
-	FSUnderLine,
-	FSOutline,
+	FSNormal		= 1 << 0,
+	FSBold			= 1 << 1,
+	FSItalic		= 1 << 2,
+	FSUnderLine		= 1 << 3,
+	FSOutline		= 1 << 4,
 };
 
 class D3d11Texture;
@@ -71,7 +72,7 @@ class Font
 		~TextureUsed();
 
 		// if return false, the texture is full, need a new trxture.
-		bool AddText(TextInfo& TI, FT_GlyphSlot Glyph);
+		bool AddText(TextInfo& TI, FT_Bitmap& BitMap);
 		D3d11Texture* Tex;
 		int XOffset;
 		int YOffset;
@@ -84,7 +85,7 @@ class Font
 public:
 	FontType GetFontType() const;
 	unsigned int GetFontSize() const;
-	FontStyle GetFontStyle() const;
+	unsigned int GetFontStyle() const;
 	int GetOutlineWidth() const;
 
 	TextInfo* GetTextInfo(unsigned long CH);
@@ -93,8 +94,10 @@ protected:
 	~Font();
 
 	FT_Face mFTFace;
+	FT_Library mFTLibrary;
+	FT_Stroker mFTStroker;
 	FontType mFontType;
-	FontStyle mFontStyle;
+	unsigned int mFontStyle;
 	int mOutlineWidth;
 	unsigned int mFontSize;
 	std::map<unsigned long, TextInfo*> mTextMap;
@@ -105,7 +108,7 @@ class FontManager
 {
 	friend class Scene;
 public:
-	Font* GetFont(FontType FT, unsigned int FontSize);
+	Font* GetFont(FontType FT, unsigned int FontSize, unsigned int FontStyle = FSNormal, int OutLineWidth = 0);
 protected:
 	FontManager();
 	~FontManager();

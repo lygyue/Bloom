@@ -463,8 +463,8 @@ void Scene::InitialiseScene()
 
 	// create start message
 	std::wstring StartMessage = L"»ÆºÓÔ¶ÉÏ°×ÔÆ¼ä";
-	Font* F = mFontManager->GetFont(MFMengYuan, 64);
-	Text* T = mTextManager->CreateText(StartMessage, F, Vector4(0.8f, 0.5f, 0.3f, 1), false);
+	Font* F = mFontManager->GetFont(MFMengYuan, 64, FSOutline, 2);
+	Text* T = mTextManager->CreateText(StartMessage, F, Vector4(0.8f, 0.5f, 0.3f, 1), true);
 
 	SceneNode* TextNode1 = mRootSceneNode->CreateChild("Start_Text_Node1", Vector3(0, 0, RenderGroupManager::GetRenderGroupDepth(RenderGroup_TEXT)), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_TEXT);
 	TextNode1->AttachMesh(T->GetAttachMesh());
