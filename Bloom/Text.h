@@ -37,6 +37,9 @@ public:
 	Mesh* GetAttachMesh() const;
 	int GetTextCount() const;
 	Text::OriginalMode GetTextAlignMode() const;
+	void SetVisible(bool Visible);
+	bool GetVisible() const;
+	std::wstring GetName() const;
 protected:
 	Text();
 	~Text();
@@ -46,6 +49,7 @@ protected:
 	Mesh* mAttachMesh;
 	OriginalMode mAlignMode;
 	int mTextCount;
+	std::wstring mName;
 };
 
 class TextManager
@@ -54,6 +58,7 @@ class TextManager
 public:
 	Text* CreateText(std::wstring Title, Font* FT, Vector4 Col, bool Horizontal = true, Text::OriginalMode OM = Text::Original_Center);
 	bool DestroyText(std::wstring Title);
+	bool DestroyText(Text* T);
 protected:
 	TextManager();
 	~TextManager();

@@ -34,16 +34,18 @@ enum FontType
 	MFYiFeng,
 	MFYuYi,
 	MFZhuoHei,
-
+	// gen you ye fonts
+	YGYXingCao,
 	FontMax,
 };
 enum FontStyle
 {
-	FSNormal		= 1 << 0,
-	FSBold			= 1 << 1,
-	FSItalic		= 1 << 2,
-	FSUnderLine		= 1 << 3,
-	FSOutline		= 1 << 4,
+	FSNormal = 1 << 0,
+	FSBold = 1 << 1,
+	FSItalic = 1 << 2,
+	FSUnderLine = 1 << 3,
+	FSOutline = 1 << 4,
+	FSRotate = 1 << 5,					// Can not combine with FSItalic, clock wise
 };
 
 class D3d11Texture;
@@ -72,7 +74,7 @@ class Font
 		~TextureUsed();
 
 		// if return false, the texture is full, need a new trxture.
-		bool AddText(TextInfo& TI, FT_Bitmap& BitMap);
+		bool AddText(TextInfo& TI, FT_Bitmap& BitMap, bool IsL8 = true);
 		D3d11Texture* Tex;
 		int XOffset;
 		int YOffset;
@@ -99,6 +101,8 @@ protected:
 	FontType mFontType;
 	unsigned int mFontStyle;
 	int mOutlineWidth;
+	int mBoldWidth;
+	float mRotateDegree;
 	unsigned int mFontSize;
 	std::map<unsigned long, TextInfo*> mTextMap;
 	std::vector<TextureUsed*> mTextureUesedArray;
@@ -108,7 +112,7 @@ class FontManager
 {
 	friend class Scene;
 public:
-	Font* GetFont(FontType FT, unsigned int FontSize, unsigned int FontStyle = FSNormal, int OutLineWidth = 0);
+	Font* GetFont(FontType FT, unsigned int FontSize, unsigned int FontStyle = FSNormal, int OutLineWidth = 0, int BoldWidth = 0, float RotateDegree = 0);
 protected:
 	FontManager();
 	~FontManager();

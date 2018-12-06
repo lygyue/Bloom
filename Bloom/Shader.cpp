@@ -501,7 +501,18 @@ bool Shader::Initialise(ID3D11Device* Device, std::string VSD, std::string PSD, 
 	// Create vertex shader
 	ID3DBlob * blobData;
 	ID3DBlob * errorBlob = nullptr;
-	HRESULT result = D3DCompile(VSD.c_str(), VSD.length(), 0, 0, 0, "main", "vs_4_0", 0, 0, &blobData, &errorBlob);
+	DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+#ifdef _DEBUG
+	// Set the D3DCOMPILE_DEBUG flag to embed debug information in the shaders.
+	// Setting this flag improves the shader debugging experience, but still allows 
+	// the shaders to be optimized and to run exactly the way they will run in 
+	// the release configuration of this program.
+	dwShaderFlags |= D3DCOMPILE_DEBUG;
+
+	// Disable optimizations to further improve shader debugging
+	dwShaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+	HRESULT result = D3DCompile(VSD.c_str(), VSD.length(), 0, 0, 0, "main", "vs_4_0", dwShaderFlags, 0, &blobData, &errorBlob);
 	if (FAILED(result))
 	{
 		return false;
@@ -520,7 +531,7 @@ bool Shader::Initialise(ID3D11Device* Device, std::string VSD, std::string PSD, 
 		return false;
 	}
 	// Create pixel shader
-	result = D3DCompile(PSD.c_str(), PSD.length(), 0, 0, 0, "main", "ps_4_0", 0, 0, &blobData, 0);
+	result = D3DCompile(PSD.c_str(), PSD.length(), 0, 0, 0, "main", "ps_4_0", dwShaderFlags, 0, &blobData, 0);
 	result = Device->CreatePixelShader(blobData->GetBufferPointer(), blobData->GetBufferSize(), NULL, &mPixelShader);
 	blobData->Release();
 	if (FAILED(result))

@@ -9,6 +9,21 @@
 #include "RenderSystem.h"
 #include "GameDef.h"
 
+ // Get the horizontal and vertical screen sizes in pixel
+void GetDesktopResolution(int& Width, int& Height)
+{
+	RECT desktop;
+	// Get a handle to the desktop window
+	const HWND hDesktop = GetDesktopWindow();
+	// Get the size of screen to the variable desktop
+	GetWindowRect(hDesktop, &desktop);
+	// The top left corner will have coordinates (0,0)
+	// and the bottom right corner will have coordinates
+	// (horizontal, vertical)
+	Width = desktop.right;
+	Height = desktop.bottom;
+}
+
 RenderSystemD3D11::RenderSystemD3D11()
 {
 	mD3dDevice11 = nullptr;
@@ -49,12 +64,13 @@ bool RenderSystemD3D11::Initialise(int Width, int Height, HWND Hwnd)
 		D3D_FEATURE_LEVEL_11_0,
 		D3D_FEATURE_LEVEL_10_1,
 		D3D_FEATURE_LEVEL_10_0,
-		D3D_FEATURE_LEVEL_9_3,
-		D3D_FEATURE_LEVEL_9_2,
-		D3D_FEATURE_LEVEL_9_1
+ 		D3D_FEATURE_LEVEL_9_3,
+ 		D3D_FEATURE_LEVEL_9_2,
+ 		D3D_FEATURE_LEVEL_9_1
 	};
 	UINT NumFeatureLevels = ARRAYSIZE(FeatureLevels);
-	UINT createFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+	UINT createFlags = 0;//D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+	D3D_FEATURE_LEVEL FeatureLevel = D3D_FEATURE_LEVEL_11_0;
 	HRESULT hr = D3D11CreateDevice(Adapter
 		, D3D_DRIVER_TYPE_HARDWARE
 		, 0
@@ -63,7 +79,7 @@ bool RenderSystemD3D11::Initialise(int Width, int Height, HWND Hwnd)
 		, NumFeatureLevels
 		, D3D11_SDK_VERSION
 		, &mD3dDevice11
-		, NULL
+		, &FeatureLevel/*NULL*/
 		, &mDX11DeviceContext
 	);
 	if (FAILED(hr))
@@ -80,13 +96,64 @@ bool RenderSystemD3D11::Initialise(int Width, int Height, HWND Hwnd)
 		OutputDebugStringA("CreateDXGIFactory1 Failed!");
 		return false;
 	}
+	// Use the factory to create an adapter for the primary graphics interface (video card).
+	hr = DXGIFactory->EnumAdapters(0, &Adapter);
+	if (FAILED(hr))
+	{
+		OutputDebugStringA("EnumAdapters Failed!");
+		return false;
+	}
+	IDXGIOutput* AdapterOutput;
+	// Enumerate the primary adapter output (monitor).
+	hr = Adapter->EnumOutputs(0, &AdapterOutput);
+	if (FAILED(hr))
+	{
+		OutputDebugStringA("EnumOutputs Failed!");
+		return false;
+	}
+	unsigned int NumModes = 0;
+	// Get the number of modes that fit the DXGI_FORMAT_R8G8B8A8_UNORM display format for the adapter output (monitor).
+	hr = AdapterOutput->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_ENUM_MODES_INTERLACED, &NumModes, NULL);
+	if (FAILED(hr))
+	{
+		OutputDebugStringA("GetDisplayModeList Failed!");
+		return false;
+	}
+	DXGI_MODE_DESC* DisplayModeList;
+	// Create a list to hold all the possible display modes for this monitor/video card combination.
+	DisplayModeList = new DXGI_MODE_DESC[NumModes];
+	// Now fill the display mode list structures.
+	hr = AdapterOutput->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_ENUM_MODES_INTERLACED, &NumModes, DisplayModeList);
+	// Now go through all the display modes and find the one that matches the screen width and height.
+	// When a match is found store the numerator and denominator of the refresh rate for that monitor.
+	unsigned int Numerator, Denominator;
+	int ScreenWidth, ScreenHeight;
+	GetDesktopResolution(ScreenWidth, ScreenHeight);
+	for (unsigned int i = 0; i < NumModes; i++)
+	{
+		if (ScreenWidth == DisplayModeList[i].Width && ScreenHeight == DisplayModeList[i].Height)
+		{
+			Numerator = DisplayModeList[i].RefreshRate.Numerator;
+			Denominator = DisplayModeList[i].RefreshRate.Denominator;
+			// don't break, get the final refresh rate
+		}
+	}
+	SAFE_DELETE_ARRAY(DisplayModeList);
+	SAFE_RELEASE(AdapterOutput);
+	SAFE_RELEASE(Adapter);
+
 	DXGI_SWAP_CHAIN_DESC scDesc;
 	memset(&scDesc, 0, sizeof(scDesc));
 	scDesc.BufferCount = 2;
 	scDesc.BufferDesc.Width = Width;//Width;
 	scDesc.BufferDesc.Height = Height;//Height;
 	scDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+#if VERTICAL_SYNCHRONIZATION
+	scDesc.BufferDesc.RefreshRate.Numerator = Numerator;
+	scDesc.BufferDesc.RefreshRate.Denominator = Denominator;
+#else
 	scDesc.BufferDesc.RefreshRate.Denominator = 1;
+#endif
 	scDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	scDesc.OutputWindow = Hwnd;
 	scDesc.SampleDesc.Count = MSAA_LEVEL;

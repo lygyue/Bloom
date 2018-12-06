@@ -133,7 +133,8 @@ std::string ResourceManager::GetBloomImagePath() const
 std::string ResourceManager::GetFontFullPath(FontType FT) const
 {
 	static std::string FontFileNames[FontMax] = {"MFDingHei.ttf", "MFFanSong.ttf", "MFJingYue.ttf", "MFJinHua.ttf", "MFLingYi.ttf", "MFMengYuan.ttf", "MFNianZhen.ttf", "MFSiYan.ttf"
-													 , "MFSuBai.ttf", "MFWenShang.ttf", "MFXingYan.ttf", "MFXiYue.ttf", "MFYiFeng.ttf", "MFYuYi.ttf", "MFZhuoHei.ttf"};
+													, "MFSuBai.ttf", "MFWenShang.ttf", "MFXingYan.ttf", "MFXiYue.ttf", "MFYiFeng.ttf", "MFYuYi.ttf", "MFZhuoHei.ttf"
+													, "xindexingcao57.ttf"};
 
 	std::string FileName = mAppPath + Game_FONT_PATH + FontFileNames[FT];
 

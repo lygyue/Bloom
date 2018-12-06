@@ -27,10 +27,11 @@ Material::Material(std::string Name)
 	ID3D11Device* Device = Scene::GetCurrentScene()->GetRenderSystem()->GetD3d11Device();
 	// Create sampler state
 	D3D11_SAMPLER_DESC ss; memset(&ss, 0, sizeof(ss));
-	ss.AddressU = ss.AddressV = ss.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	ss.AddressU = ss.AddressV = ss.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 	ss.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	ss.ComparisonFunc = D3D11_COMPARISON_NEVER;
 	ss.MaxAnisotropy = 0;
-	ss.MaxLOD = 0;
+	ss.MaxLOD = D3D11_FLOAT32_MAX;
 	result = Device->CreateSamplerState(&ss, &mSamplerState);
 
 	// Create rasterizer

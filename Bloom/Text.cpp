@@ -14,7 +14,6 @@
 #include <vector>
 #include "Math/Vector4.h"
 #include "Math/SimpleMath.h"
-#include "GameDef.h"
 #include "Scene.h"
 
 Text::Text()
@@ -46,10 +45,27 @@ Text::OriginalMode Text::GetTextAlignMode() const
 	return mAlignMode;
 }
 
+void Text::SetVisible(bool Visible)
+{
+	mAttachMesh->SetVisible(Visible);
+}
+
+bool Text::GetVisible() const
+{
+	return mAttachMesh->GetVisible();
+}
+
+std::wstring Text::GetName() const
+{
+	return mName;
+}
+
 void Text::BuildTextQuad(QuadStruct* QS, int StartX, int StartY, int EndX, int EndY, TextInfo* TI)
 {
-	Vector3 Pos1 = Vector3(float(StartX << 1) / float(WINDOW_WIDTH), float(StartY << 1) / float(WINDOW_HEIGHT), 0);
-	Vector3 Pos2 = Vector3(float(EndX << 1) / float(WINDOW_WIDTH), float(EndY << 1) / float(WINDOW_HEIGHT), 0);
+	int WindowWidth = Scene::GetCurrentScene()->GetWindowWidth();
+	int WindowHeight = Scene::GetCurrentScene()->GetWindowHeight();
+	Vector3 Pos1 = Vector3(float(StartX << 1) / float(WindowWidth), float(StartY << 1) / float(WindowHeight), 0);
+	Vector3 Pos2 = Vector3(float(EndX << 1) / float(WindowWidth), float(EndY << 1) / float(WindowHeight), 0);
 	QS[0].Position = Pos1;
 	QS[1].Position = Vector3(Pos2.x, Pos1.y, 0);
 	QS[2].Position = Pos2;
@@ -63,7 +79,8 @@ void Text::BuildTextQuad(QuadStruct* QS, int StartX, int StartY, int EndX, int E
 
 bool Text::BuildText(std::vector<TextInfo *>& V, Vector4& TextColor, bool Horizontal /* = true */, OriginalMode OM /* = Original_Center */)
 {
-	if (V.size() == 0) return false;
+	if (V.size() == 0) 
+		return false;
 	mTextCount = (int)V.size();
 	mAlignMode = OM;
 	// not to consider one sentence in multi font textures, in this case is useless.
@@ -124,12 +141,12 @@ bool Text::BuildText(std::vector<TextInfo *>& V, Vector4& TextColor, bool Horizo
 		if (Horizontal)
 		{
 			HorizontalAdvance /= 2;
-			Translate = Vector3(float(-HorizontalAdvance * 2) / float(WINDOW_WIDTH), 0, 0);
+			Translate = Vector3(float(-HorizontalAdvance * 2) / float(Scene::GetCurrentScene()->GetWindowWidth()), 0, 0);
 		}
 		else
 		{
 			VerticalAdvance /= 2;
-			Translate = Vector3(0, float(-VerticalAdvance * 2) / float(WINDOW_HEIGHT), 0);
+			Translate = Vector3(0, float(-VerticalAdvance * 2) / float(Scene::GetCurrentScene()->GetWindowHeight()), 0);
 		}
 		break;
 	case Text::Original_Left:
@@ -185,6 +202,7 @@ Text* TextManager::CreateText(std::wstring Title, Font* FT, Vector4 Col, bool Ho
 	}
 
 	Text* T = new Text;
+	T->mName = Title;
 	if (T->BuildText(TextArray, Col, Horizontal, OM))
 	{
 		mTextMap[Title] = T;
@@ -204,5 +222,12 @@ bool TextManager::DestroyText(std::wstring Title)
 	Text* T = mTextMap[Title];
 	SAFE_DELETE(T);
 	mTextMap.erase(Title);
+	return true;
+}
+
+bool TextManager::DestroyText(Text* T)
+{
+	mTextMap.erase(T->GetName());
+	SAFE_DELETE(T);
 	return true;
 }

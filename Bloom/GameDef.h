@@ -9,7 +9,7 @@
 #pragma once
 
 #define WINDOW_WIDTH		1600
-#define WINDOW_HEIGHT		900
+#define WINDOW_HEIGHT		1024
 
 // 120 seconds
 #define GAME_TIME			120.0f
@@ -22,3 +22,5 @@
 #define FONT_IMAGE_SIZE		512
 
 #define MSAA_LEVEL			4
+
+#define VERTICAL_SYNCHRONIZATION	1

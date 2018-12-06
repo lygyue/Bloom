@@ -35,7 +35,14 @@ Scene::Scene()
 	mFontManager = new FontManager;
 	mTextManager = new TextManager;
 	mGameLogicManager = nullptr;
-	mCamera->SetProjectionParameters(DegreesToRadians(90), float(WINDOW_WIDTH) / float(WINDOW_HEIGHT), NEAR_PLANE, FAR_PLANE);
+	mCurrentFrameRate = 0;
+	mRenderFrameRate = false;
+	mWindowWidth = 0;
+	mWindowHeight = 0;
+	mFrameRateText = nullptr;
+	mFrameRateTextTitle = nullptr;
+	mFrameRateTextNode = nullptr;
+	mFrameRateTextTitleNode = nullptr;
 }
 
 Scene::~Scene()
@@ -81,7 +88,12 @@ void Scene::BuildApplicationPath()
 bool Scene::Initialise(HWND hWnd)
 {
 	mHwnd = hWnd;
-	if (mRenderSystem->Initialise(WINDOW_WIDTH, WINDOW_HEIGHT, mHwnd) == false)
+	RECT rc;
+	GetClientRect(hWnd, &rc);
+	mWindowWidth = rc.right - rc.left;
+	mWindowHeight = rc.bottom - rc.top;
+	mCamera->SetProjectionParameters(DegreesToRadians(90), float(mWindowWidth) / float(mWindowHeight), NEAR_PLANE, FAR_PLANE);
+	if (mRenderSystem->Initialise(mWindowWidth, mWindowHeight, mHwnd) == false)
 	{
 		return false;
 	}
@@ -92,6 +104,7 @@ bool Scene::Initialise(HWND hWnd)
 	mMaterialManager->Initialise();
 	mBackGroundNode = mRootSceneNode->CreateChild("BackGround_Node", Vector3(0, 0, RenderGroupManager::GetRenderGroupDepth(RenderGroup_BackGroud)), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_BackGroud);
 	CreateBackGround();
+	CreateFrameRateText();
 	InitialiseScene();
 	return true;
 }
@@ -119,7 +132,6 @@ void Scene::Update()
 	{
 		// update camera
 		float Delta = Timer::GetInstance()->GetDeltaFloat();
-
 		float xOffset = (Delta / SCREEN_PASS_TIME) * 2.0f;
 		mCamera->Translate(xOffset, 0, 0);
 	}
@@ -215,15 +227,15 @@ SceneNode* Scene::GetBackGroundNode() const
 void Scene::RenderOneFrame()
 {
 	mRenderSystem->SetAndClearRenderTarget();
-	mRenderSystem->SetViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+	mRenderSystem->SetViewport(0, 0, float(mWindowWidth), float(mWindowHeight));
 	mRenderGroupManager->RenderAllQueue();
 	mRenderSystem->Present();
 }
 
 void Scene::BuildQuad(Vector3* Pos, Vector2* UV, int Width, int Height, int UStart, int VStart, int UEnd, int VEnd) const
 {
-	float W = float(UEnd - UStart) / float(WINDOW_WIDTH);
-	float H = float(VEnd - VStart) / float(WINDOW_HEIGHT);
+	float W = float(UEnd - UStart) / float(mWindowWidth);
+	float H = float(VEnd - VStart) / float(mWindowHeight);
 	Pos[0] = Vector3(-W / 2.0f, H / 2.0f, 0);
 	Pos[1] = Vector3(W / 2.0f, H / 2.0f, 0);
 	Pos[2] = Vector3(W / 2.0f, -H / 2.0f, 0);
@@ -463,8 +475,8 @@ void Scene::InitialiseScene()
 
 	// create start message
 	std::wstring StartMessage = L"黄河远上白云间";
-	Font* F = mFontManager->GetFont(MFMengYuan, 64, FSOutline, 2);
-	Text* T = mTextManager->CreateText(StartMessage, F, Vector4(0.8f, 0.5f, 0.3f, 1), true);
+	Font* F = mFontManager->GetFont(YGYXingCao, 64/*, FSOutline | FSBold, 8, 4*/);
+	Text* T = mTextManager->CreateText(StartMessage, F, Vector4(0.8f, 0.5f, 0.3f, 1), false);
 
 	SceneNode* TextNode1 = mRootSceneNode->CreateChild("Start_Text_Node1", Vector3(0, 0, RenderGroupManager::GetRenderGroupDepth(RenderGroup_TEXT)), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_TEXT);
 	TextNode1->AttachMesh(T->GetAttachMesh());
@@ -497,6 +509,19 @@ void Scene::CreateBackGround()
 	mBackGroundNode->AttachMesh(M);
 }
 
+void Scene::CreateFrameRateText()
+{
+	// create start message
+	std::wstring StartMessage = L"帧率：";
+	Font* F = mFontManager->GetFont(MFMengYuan, 16, FSOutline, 2);
+	mFrameRateTextTitle = mTextManager->CreateText(StartMessage, F, Vector4(1, 0, 0, 1));
+
+	mFrameRateTextTitleNode = mRootSceneNode->CreateChild("FrameRate_Title_Node", Vector3(-0.74f, 0.75f, RenderGroupManager::GetRenderGroupDepth(RenderGroup_TEXT)), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_TEXT);
+	mFrameRateTextTitleNode->AttachMesh(mFrameRateTextTitle->GetAttachMesh());
+
+	mFrameRateTextNode = mRootSceneNode->CreateChild("FrameRate_Node", Vector3(-0.68f, 0.75f, RenderGroupManager::GetRenderGroupDepth(RenderGroup_TEXT)), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_TEXT);
+}
+
 void Scene::SwitchToNextBackGround()
 {
 	Material* Mat = mMaterialManager->GetMaterialByName("Back_Ground_Material_0");
@@ -509,4 +534,50 @@ void Scene::SwitchToNextBackGround()
 	mTextureManager->DestroyTexture(OldTexture);
 
 	Mat->SetTexture(Tex);
+}
+
+void Scene::SetRenderFrameRate(bool RenderFrameRate /* = true */)
+{
+	mRenderFrameRate = RenderFrameRate;
+	if (mFrameRateText)
+		mFrameRateText->SetVisible(mRenderFrameRate);
+}
+
+bool Scene::GetRenderFrameRate() const
+{
+	return mRenderFrameRate;
+}
+
+void Scene::SetCurrentFrameRate(int FrameRate)
+{
+	mCurrentFrameRate = FrameRate;
+	Font* F = mFontManager->GetFont(MFMengYuan, 16, FSOutline, 2);
+	if (mFrameRateText)
+	{
+		mFrameRateTextNode->DetachMesh(mFrameRateText->GetAttachMesh());
+		// destroy text
+		mTextManager->DestroyText(mFrameRateText);
+	}
+	std::wstring FrameRateText = std::to_wstring(mCurrentFrameRate);
+	mFrameRateText = mTextManager->CreateText(FrameRateText, F, Vector4(1, 0, 0, 1));
+	if (mFrameRateText == nullptr)
+	{
+		OutputDebugStringA("CreateText Failed at SetCurrentFrameRate");
+	}
+	mFrameRateTextNode->AttachMesh(mFrameRateText->GetAttachMesh());
+}
+
+int Scene::GetCurrentFrameRate() const
+{
+	return mCurrentFrameRate;
+}
+
+int Scene::GetWindowWidth() const
+{
+	return mWindowWidth;
+}
+
+int Scene::GetWindowHeight() const
+{
+	return mWindowHeight;
 }

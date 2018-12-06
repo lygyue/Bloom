@@ -109,6 +109,7 @@ class CollisionManager;
 class AnimationManager;
 class FontManager;
 class TextManager;
+class Text;
 class Scene
 {
 	friend class GameLogicManager;
@@ -141,6 +142,14 @@ public:
 public:
 	void RenderOneFrame();
 
+	void SetRenderFrameRate(bool RenderFrameRate = true);
+	bool GetRenderFrameRate() const;
+
+	void SetCurrentFrameRate(int FrameRate);
+	int GetCurrentFrameRate() const;
+
+	int GetWindowWidth() const;
+	int GetWindowHeight() const;
 protected:
 	Scene();
 	~Scene();
@@ -179,6 +188,7 @@ protected:
 	void BuildRandomSceneNode(BuildStruct& BS);
 	void InitialiseScene();
 	void CreateBackGround();
+	void CreateFrameRateText();
 	void SwitchToNextBackGround();
 private:
 	SceneNode* mRootSceneNode;
@@ -200,4 +210,13 @@ private:
 	FontManager* mFontManager;
 	TextManager* mTextManager;
 	bool mCameraAnimation;
+
+	Text* mFrameRateText;
+	Text* mFrameRateTextTitle;
+	SceneNode* mFrameRateTextNode;
+	SceneNode* mFrameRateTextTitleNode;
+	bool mRenderFrameRate;
+	int mCurrentFrameRate;
+	int mWindowWidth;
+	int mWindowHeight;
 };

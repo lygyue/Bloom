@@ -59,6 +59,18 @@ void GameLogicManager::StartNewGame()
 void GameLogicManager::Update()
 {
 	Timer::ThisInstance->Update();
+	// calculate frame rate
+	static int FrameRate = 0;
+	static float DeltaTime = 0.0f;
+	DeltaTime += Timer::ThisInstance->GetDeltaFloat();
+	FrameRate++;
+	if (DeltaTime >= 1.0f)
+	{
+		DeltaTime = fmod(DeltaTime, 1.0f);
+		Scene::GetCurrentScene()->SetRenderFrameRate(true);
+		Scene::GetCurrentScene()->SetCurrentFrameRate(FrameRate);
+		FrameRate = 0;
+	}
 	Scene::GetCurrentScene()->Update();
 	mPlayer->Update();
 }
