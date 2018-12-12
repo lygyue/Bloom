@@ -38,6 +38,7 @@ enum Effect_Type
 	Effect_Norma_Brightness_Normal,
 	Effect_Left_Right_Left,
 	Effect_Text_Fade_In_In_Order,
+	Effect_Text_Fade_Out,
 	Effect_Max,
 };
 //-----------------------------------------------------------------------
@@ -48,13 +49,23 @@ class Effect
 {
 	friend class EffectManager;
 public:
-	void SetName(std::string Name);
+	class EffectListener
+	{
+	public:
+		virtual void OnInitialise(Effect* E) = 0;
+		virtual void OnEnd(Effect* E) = 0;
+		// This function been called in destructor, so the most method is useless.
+		virtual void OnDestroy(Effect* E) = 0;
+	};
+public:
 	std::string GetName() const;
+	Effect_Type GetType() const;
 	bool IsEnd() const;
 	bool IsLoop() const;
 	void SetLoop(bool Loop);
 	bool IsAutoDestroy() const;
 	void SetAutoDestroy(bool AutoDestroy);
+	unsigned int GetAutoDestroyElements() const;
 protected:
 	Effect();
 	virtual ~Effect();
@@ -66,17 +77,23 @@ protected:
 	float CalculateCurrentAlpha();
 	void SetAlphaToConstBuffer(float Alpha);
 
-	virtual void Initialise() {}
-	virtual void Update() {}
+	virtual void Initialise();
+	virtual void Update();
 
+	EffectListener* mListener;
 	std::string mNextTexturePath;
 	Mesh* mAttachMesh;
 	SceneNode* mAttachSceneNode;
 	Material* mOriginalMaterial;
 	std::string mName;
+	Effect_Type mEffectType;
 	float mTotalTime;
 	float mCurrentTime;
 	float mAcceleration;
+	// Don't include the element created by this instance. 
+	// For example, in this instance create a new material, it must be destroyed.
+	// But the original material may be need to destroy, so you can set this flag to do this.
+	unsigned int mDestroyElements;			// see ElementType for details
 	bool mAutoDestroy;
 	bool mIsEnd;
 	bool mLoop;
@@ -292,11 +309,26 @@ protected:
 	int mTextCount;
 };
 //-----------------------------------------------------------------------
+class EffectTextFadeOut : public Effect
+{
+	friend class EffectManager;
+public:
+	void SetTextColor(Vector4& TextColor);
+protected:
+	EffectTextFadeOut();
+	virtual ~EffectTextFadeOut();
+
+	virtual void Initialise() override;
+	virtual void Update() override;
+
+	Vector4 mTextColor;
+};
+//-----------------------------------------------------------------------
 class EffectManager
 {
 	friend class Scene;
 public:
-	Effect* CreateEffect(std::string Name, Effect_Type ET, float TotalTime, bool IsLoop, bool AutoDestroy, float Acceleration, Mesh* M, SceneNode* S = nullptr, const char* NewTexturePath = nullptr);
+	Effect* CreateEffect(std::string Name, Effect_Type ET, float TotalTime, bool IsLoop, bool AutoDestroy, float Acceleration, Mesh* M, SceneNode* S = nullptr, const char* NewTexturePath = nullptr, unsigned int DestroyElement = 0, Effect::EffectListener* Listener = nullptr);
 
 	void DestroyEffect(std::string Name);
 protected:

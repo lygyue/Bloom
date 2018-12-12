@@ -17,6 +17,7 @@
 #include "Texture.h"
 #include "SceneNode.h"
 #include "GameDef.h"
+#include "Timer.h"
 
 class Camera
 {
@@ -110,7 +111,7 @@ class AnimationManager;
 class FontManager;
 class TextManager;
 class Text;
-class Scene
+class Scene : public Effect::EffectListener, public ITimerListener
 {
 	friend class GameLogicManager;
 public:
@@ -150,12 +151,14 @@ public:
 
 	int GetWindowWidth() const;
 	int GetWindowHeight() const;
+public:
+	// override from Effect::EffectListener
+	virtual void OnInitialise(Effect* E) override;
+	virtual void OnEnd(Effect* E) override;
+	virtual void OnDestroy(Effect* E) override;
+	// override from ITimerListener
+	virtual void OnTimer(unsigned int EventID) override;
 protected:
-	Scene();
-	~Scene();
-
-	void BuildApplicationPath();
-	static Scene* CurrentScene;
 	struct BlockInfo
 	{
 		int StartTexCoordX;
@@ -184,12 +187,29 @@ protected:
 		std::vector<BlockInfo> BlockArray;
 	};
 
+	struct StartPoemStruct
+	{
+		std::wstring PoemText;
+		std::string NodeName;
+		std::string FadeInEffectName;
+		std::string FadeOutEffectName;
+		Text* T;
+		Vector3 NodePosition;
+	};
+protected:
+	Scene();
+	~Scene();
+
+	void BuildApplicationPath();
+	static Scene* CurrentScene;
+
 	void BuildQuad(Vector3* Pos, Vector2* UV, int Width, int Height, int UStart, int VStart, int UEnd, int VEnd) const;
 	void BuildRandomSceneNode(BuildStruct& BS);
 	void InitialiseScene();
 	void CreateBackGround();
 	void CreateFrameRateText();
 	void SwitchToNextBackGround();
+	void CreateStartPoemEffect(int Index, bool IsFadeIn);
 private:
 	SceneNode* mRootSceneNode;
 	SceneNode* mBackGroundNode;
@@ -219,4 +239,8 @@ private:
 	int mCurrentFrameRate;
 	int mWindowWidth;
 	int mWindowHeight;
+
+	// start poem
+	StartPoemStruct mStartPoem[4];
+	int mCurrentPoemIndex;
 };

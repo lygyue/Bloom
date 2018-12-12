@@ -43,6 +43,7 @@ Scene::Scene()
 	mFrameRateTextTitle = nullptr;
 	mFrameRateTextNode = nullptr;
 	mFrameRateTextTitleNode = nullptr;
+	mCurrentPoemIndex = 0;
 }
 
 Scene::~Scene()
@@ -125,7 +126,7 @@ void Scene::Update()
 	mAnimationManager->Update();
 	static float CurrentTime = 0.0f;
 	CurrentTime += Timer::GetInstance()->GetDeltaFloat();
-	float BeginTime = 10.0f;
+	float BeginTime = 35.0f;
 	if (CurrentTime > BeginTime) mCameraAnimation = true;
 	if (CurrentTime > BeginTime + GAME_TIME - SCREEN_PASS_TIME / 2) mCameraAnimation = false;
 	if (mCameraAnimation)
@@ -473,16 +474,42 @@ void Scene::InitialiseScene()
 	BS.TexFullPath = mResourceManager->GetStarImagePath();
 	BuildRandomSceneNode(BS);
 
-	// create start message
-	std::wstring StartMessage = L"黄河远上白云间";
-	Font* F = mFontManager->GetFont(YGYXingCao, 64/*, FSOutline | FSBold, 8, 4*/);
-	Text* T = mTextManager->CreateText(StartMessage, F, Vector4(0.8f, 0.5f, 0.3f, 1), false);
+	float PoemX = 0.3f;
+	// assume the poem in the center of the screen, and the poem is 4 column.
+	float StepX = PoemX * 2.0f / 4.0f;
+	float PoemY = 0;
+	mStartPoem[0] = { L"黄河远上白云间", "Start_Poem_Node1", "TextFadeIn_1" , "TextFadeOut_1", nullptr,  Vector3(PoemX - 0 * StepX, PoemY, RenderGroupManager::GetRenderGroupDepth(RenderGroup_TEXT))};
+	mStartPoem[1] = { L"一片孤城万仞山", "Start_Poem_Node2", "TextFadeIn_2" , "TextFadeOut_2", nullptr,  Vector3(PoemX - 1 * StepX, PoemY, RenderGroupManager::GetRenderGroupDepth(RenderGroup_TEXT)) };
+	mStartPoem[2] = { L"羌笛何须怨杨柳", "Start_Poem_Node3", "TextFadeIn_3" , "TextFadeOut_3", nullptr,  Vector3(PoemX - 2 * StepX, PoemY, RenderGroupManager::GetRenderGroupDepth(RenderGroup_TEXT)) };
+	mStartPoem[3] = { L"春风不度玉门关", "Start_Poem_Node4", "TextFadeIn_4" , "TextFadeOut_4", nullptr,  Vector3(PoemX - 3 * StepX, PoemY, RenderGroupManager::GetRenderGroupDepth(RenderGroup_TEXT)) };
+	CreateStartPoemEffect(mCurrentPoemIndex++, true);
+}
 
-	SceneNode* TextNode1 = mRootSceneNode->CreateChild("Start_Text_Node1", Vector3(0, 0, RenderGroupManager::GetRenderGroupDepth(RenderGroup_TEXT)), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_TEXT);
-	TextNode1->AttachMesh(T->GetAttachMesh());
-	EffectTextFadeIn* E = (EffectTextFadeIn*)mEffectManager->CreateEffect("TextFadeIn_1", Effect_Text_Fade_In_In_Order, 8.0f, false, true, 0.0f, T->GetAttachMesh());
-	E->SetTextColor(Vector4(0.8f, 0.5f, 0.3f, 1));
-	E->SetTextCount(T->GetTextCount());
+void Scene::CreateStartPoemEffect(int Index, bool IsFadeIn)
+{
+	if (IsFadeIn)
+	{
+		// create start message
+		std::wstring StartMessage = mStartPoem[Index].PoemText;
+		Font* F = mFontManager->GetFont(YGYXingCao, 64, FSOutline | FSBold, 8, 4);
+		Text* T = mTextManager->CreateText(StartMessage, F, Vector4(0.8f, 0.5f, 0.3f, 1), false);
+
+		SceneNode* TextNode1 = mRootSceneNode->CreateChild(mStartPoem[Index].NodeName, mStartPoem[Index].NodePosition, Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_TEXT);
+		TextNode1->AttachMesh(T->GetAttachMesh());
+		EffectTextFadeIn* E = (EffectTextFadeIn*)mEffectManager->CreateEffect(mStartPoem[Index].FadeInEffectName, Effect_Text_Fade_In_In_Order, 8.0f, false, true, 0.0f, T->GetAttachMesh(), TextNode1, nullptr, 0, this);
+		E->SetTextColor(Vector4(0.8f, 0.5f, 0.3f, 1));
+		E->SetTextCount(T->GetTextCount());
+		mStartPoem[Index].T = T;
+	}
+	else
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			SceneNode* S = mRootSceneNode->GetChildByName(mStartPoem[i].NodeName);
+			EffectTextFadeOut* E = (EffectTextFadeOut*)mEffectManager->CreateEffect(mStartPoem[i].FadeOutEffectName, Effect_Text_Fade_Out, 2.0f, false, true, 0.0f, mStartPoem[i].T->GetAttachMesh(), S, nullptr, ElementSceneNode, this);
+			E->SetTextColor(Vector4(0.8f, 0.5f, 0.3f, 1));
+		}
+	}
 }
 
 void Scene::CreateBackGround()
@@ -527,9 +554,8 @@ void Scene::SwitchToNextBackGround()
 	Material* Mat = mMaterialManager->GetMaterialByName("Back_Ground_Material_0");
 
 	std::string BackGroundImageFileName = mResourceManager->GetBackGroundImageInOrder();
-
 	D3d11Texture* Tex = mTextureManager->LoadTextureFromFile(BackGroundImageFileName, mRenderSystem->GetD3d11Device(), BackGroundImageFileName.c_str(), false);
-
+	
 	D3d11Texture* OldTexture = Mat->GetTexture(0);
 	mTextureManager->DestroyTexture(OldTexture);
 
@@ -580,4 +606,58 @@ int Scene::GetWindowWidth() const
 int Scene::GetWindowHeight() const
 {
 	return mWindowHeight;
+}
+
+void Scene::OnInitialise(Effect* E)
+{
+	// do nothing
+}
+
+void Scene::OnEnd(Effect* E)
+{
+	// do nothing
+}
+
+void Scene::OnDestroy(Effect* E)
+{
+	if (E->GetType() == Effect_Text_Fade_In_In_Order)
+	{
+		if (mCurrentPoemIndex < 4)
+		{
+			// in fade in process
+			CreateStartPoemEffect(mCurrentPoemIndex++, true);
+		}
+		else
+		{
+			mCurrentPoemIndex = 0;
+			Timer::GetInstance()->AddOnceTimer((ITimerListener*)this, 0, 0);
+		}
+	}
+	else
+	{
+		mCurrentPoemIndex++;
+		// all fade out destroyed
+		if (mCurrentPoemIndex == 4)
+		{
+			Timer::GetInstance()->AddOnceTimer((ITimerListener*)this, 1, 0);
+		}
+	}
+}
+
+void Scene::OnTimer(unsigned int EventID)
+{
+	if (EventID == 0)
+	{
+		// destroy fade in, start to fade out
+		CreateStartPoemEffect(0, false);
+	}
+	else if (EventID == 1)
+	{
+		// all fade out been destroyed
+		// start to destroy all the text elements
+		mTextManager->DestroyText(mStartPoem[0].T);
+		mTextManager->DestroyText(mStartPoem[1].T);
+		mTextManager->DestroyText(mStartPoem[2].T);
+		mTextManager->DestroyText(mStartPoem[3].T);
+	}
 }

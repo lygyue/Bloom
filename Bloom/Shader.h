@@ -38,6 +38,7 @@ enum BaseShader
 	SimpleSampleWithBlur,
 	SimpleFontSample,
 	SimpleTextFadeIn,
+	SimpleTextFadeOut,
 	CutomShader,
 };
 enum ShaderElement

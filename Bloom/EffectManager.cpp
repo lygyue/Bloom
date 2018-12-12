@@ -30,21 +30,54 @@ Effect::Effect()
 	mIsEnd = false;
 	mAutoDestroy = true;
 	mLoop = false;
+	mDestroyElements = 0;
+	mListener = nullptr;
+	mEffectType = Effect_Max;
 }
 
 Effect::~Effect()
 {
+	if (mListener)
+	{
+		mListener->OnDestroy(this);
+	}
+	if (mDestroyElements & ElementTexture)
+	{
+		Material* Mat = mAttachMesh->GetMaterial();
+		int TextureCount = Mat->GetTextureCount();
+		TextureManager* TexMgr = Scene::GetCurrentScene()->GetTextureManager();
+		for (int i = 0; i < TextureCount; i++)
+		{
+			TexMgr->DestroyTexture(Mat->GetTexture(i));
+		}
+	}
+	if (mDestroyElements & ElementMaterial)
+	{
+		Material* Mat = mAttachMesh->GetMaterial();
+		Scene::GetCurrentScene()->GetMaterialManager()->DestroyMaterial(Mat);
+	}
 
-}
+	if (mDestroyElements & ElementMesh)
+	{
+		mAttachSceneNode->DetachMesh(mAttachMesh);
+		Scene::GetCurrentScene()->GetMeshManager()->DestroyMesh(mAttachMesh);
+	}
 
-void Effect::SetName(std::string Name)
-{
-	mName = Name;
+	if (mDestroyElements& ElementSceneNode)
+	{
+		SceneNode* SN = mAttachSceneNode->GetParentSceneNode();
+		SN->RemoveAndDestroyChild(mAttachSceneNode);
+	}
 }
 
 std::string Effect::GetName() const
 {
 	return mName;
+}
+
+Effect_Type Effect::GetType() const
+{
+	return mEffectType;
 }
 
 bool Effect::IsEnd() const
@@ -70,6 +103,11 @@ bool Effect::IsAutoDestroy() const
 void Effect::SetAutoDestroy(bool AutoDestroy)
 {
 	mAutoDestroy = AutoDestroy;
+}
+
+unsigned int Effect::GetAutoDestroyElements() const
+{
+	return mDestroyElements;
 }
 
 void Effect::SetAttachMesh(Mesh* M)
@@ -131,6 +169,25 @@ void Effect::SetAlphaToConstBuffer(float Alpha)
 	memcpy(TempPtr, &Alpha, sizeof(float));
 	Mat->SetConstBufferLen(sizeof(float));
 }
+
+void Effect::Initialise()
+{
+	if (mListener)
+	{
+		mListener->OnInitialise(this);
+	}
+}
+
+void Effect::Update()
+{
+	if (IsEnd())
+	{
+		if (mListener)
+		{
+			mListener->OnEnd(this);
+		}
+	}
+}
 //-----------------------------------------------------------------------
 EffectFadeIn::EffectFadeIn()
 {
@@ -166,12 +223,14 @@ void EffectFadeIn::Initialise()
 		CurrentMaterial->SetTexture(OldTex);
 	}
 	mAttachMesh->SetMaterial(CurrentMaterial);
+	Effect::Initialise();
 }
 
 void EffectFadeIn::Update()
 {
 	float Alpha = CalculateCurrentAlpha();
 	SetAlphaToConstBuffer(Alpha);
+	Effect::Update();
 	return;
 }
 //-----------------------------------------------------------------------
@@ -189,6 +248,7 @@ void EffectFadeOut::Update()
 {
 	float Alpha = 1.0f - CalculateCurrentAlpha();
 	SetAlphaToConstBuffer(Alpha);
+	Effect::Update();
 	return;
 }
 //-----------------------------------------------------------------------
@@ -212,6 +272,7 @@ void EffectFadeInOut::Initialise()
 	mFirstEffect->mAutoDestroy = mAutoDestroy;
 	mFirstEffect->SetAttachMesh(mAttachMesh);
 	mFirstEffect->Initialise();
+	Effect::Initialise();
 }
 
 void EffectFadeInOut::Update()
@@ -235,7 +296,12 @@ void EffectFadeInOut::Update()
 	else
 	{
 		mSecondEffect->Update();
+		if (mSecondEffect->IsEnd())
+		{
+			mIsEnd = true;
+		}
 	}
+	Effect::Update();
 }
 //-----------------------------------------------------------------------
 EffectFadeInOutBlend::EffectFadeInOutBlend()
@@ -271,12 +337,14 @@ void EffectFadeInOutBlend::Initialise()
 		mOriginalMaterial->SetTexture(Tex);
 	}
 	mAttachMesh->SetMaterial(CurrentMaterial);
+	Effect::Initialise();
 }
 
 void EffectFadeInOutBlend::Update()
 {
 	float Alpha = CalculateCurrentAlpha();
 	SetAlphaToConstBuffer(Alpha);
+	Effect::Update();
 	return;
 }
 //-----------------------------------------------------------------------
@@ -307,6 +375,7 @@ void EffectN_B_N::Initialise()
 		D3d11Texture* Tex = TexMgr->LoadTextureFromFile(mNextTexturePath, RS->GetD3d11Device(), mNextTexturePath.c_str(), false);
 		mOriginalMaterial->SetTexture(Tex);
 	}
+	Effect::Initialise();
 }
 
 void EffectN_B_N::Update()
@@ -331,6 +400,7 @@ void EffectN_B_N::Update()
 		Alpha *= 2;
 	}
 	SetAlphaToConstBuffer(Alpha);
+	Effect::Update();
 }
 //-----------------------------------------------------------------------
 Effect_RotateOutIn::Effect_RotateOutIn()
@@ -375,6 +445,7 @@ void Effect_RotateOutIn::Update()
 	Vector3 Scale = Vector3(1 - Alpha, 1 - Alpha, 1 - Alpha);
 	mAttachSceneNode->SetScale(Scale);
 	SetAlphaToConstBuffer(Alpha);
+	Effect::Update();
 }
 //-----------------------------------------------------------------------
 Effect_SeparateTile::Effect_SeparateTile()
@@ -460,6 +531,7 @@ void Effect_SeparateTile::Initialise()
 			NodeDepth--;
 		}
 	}
+	Effect::Initialise();
 }
 
 SimpleSpline* Effect_SeparateTile::CreateSimpleSpline(Vector3& DestPosition, float DestDepth) const
@@ -517,6 +589,7 @@ void Effect_SeparateTile::Update()
 		Vector3 pos = mAnimationSplineArray[i]->interpolate(Alpha);
 		mAnimationNodeArray[i]->SetPosition(pos);
 	}
+	Effect::Update();
 }
 //-----------------------------------------------------------------------
 EffectShutter::EffectShutter()
@@ -624,6 +697,7 @@ void EffectShutter::Initialise()
 			mAnimationStructArray.push_back(SAS);
 		}
 	}
+	Effect::Initialise();
 }
 
 void EffectShutter::Update()
@@ -649,6 +723,7 @@ void EffectShutter::Update()
 		memcpy(TempPtr, &Alpha, sizeof(float));
 		Mat->SetConstBufferLen(sizeof(float));
 	}
+	Effect::Update();
 }
 
 //-----------------------------------------------------------------------
@@ -701,6 +776,7 @@ void EffectLayerAlpha::Initialise()
 	CurrentMaterial->SetTexture(AlphaTex, 2);
 	mAttachMesh->SetMaterial(CurrentMaterial);
 	mCurrentMaterial = CurrentMaterial;
+	Effect::Initialise();
 }
 
 void EffectLayerAlpha::Update()
@@ -711,6 +787,7 @@ void EffectLayerAlpha::Update()
 	int NeedSetPixels = ALphaPixels - mBeenSetPixels;
 	if (NeedSetPixels == 0)
 	{
+		Effect::Update();
 		return;
 	}
 	mBeenSetPixels = ALphaPixels;
@@ -726,6 +803,7 @@ void EffectLayerAlpha::Update()
 	UINT pitch = 0;
 	D3d11Texture* AlphaTex = mCurrentMaterial->GetTexture(2);
 	AlphaTex->BlitToTexture(mAlphaTextureData, TotalAlphaPixels);
+	Effect::Update();
 }
 //-----------------------------------------------------------------------
 EffectSimpleLighting::EffectSimpleLighting()
@@ -760,6 +838,7 @@ void EffectSimpleLighting::Initialise()
 		mOriginalMaterial->SetTexture(Tex);
 	}
 	mAttachMesh->SetMaterial(CurrentMaterial);
+	Effect::Initialise();
 }
 
 void EffectSimpleLighting::Update()
@@ -784,6 +863,7 @@ void EffectSimpleLighting::Update()
 		Alpha *= 2;
 	}
 	SetAlphaToConstBuffer(Alpha);
+	Effect::Update();
 }
 
 //-----------------------------------------------------------------------
@@ -861,6 +941,7 @@ void EffectPerlinNoiseInOut::Initialise()
 	NoiseTex3->BlitToTexture(TextureData, NoiseWidth * NoiseHeight);
 
 	SAFE_DELETE_ARRAY(TextureData);
+	Effect::Initialise();
 }
 
 void EffectPerlinNoiseInOut::Update()
@@ -885,6 +966,7 @@ void EffectPerlinNoiseInOut::Update()
 		Alpha *= 2;
 	}
 	SetAlphaToConstBuffer(Alpha);
+	Effect::Update();
 }
 //-----------------------------------------------------------------------
 EffectFogSimulation::EffectFogSimulation()
@@ -928,12 +1010,14 @@ void EffectFogSimulation::Initialise()
 	NoiseTex1->BlitToTexture(TextureData, NoiseWidth * NoiseHeight);
 
 	SAFE_DELETE_ARRAY(TextureData);
+	Effect::Initialise();
 }
 
 void EffectFogSimulation::Update()
 {
 	float Alpha = CalculateCurrentAlpha();
 	SetAlphaToConstBuffer(Alpha);
+	Effect::Update();
 	return;
 }
 //-----------------------------------------------------------------------
@@ -972,6 +1056,7 @@ void EffectTextFadeIn::Initialise()
 
 	CurrentMaterial->SetTexture(mOriginalMaterial->GetTexture(0), 0);
 	mAttachMesh->SetMaterial(CurrentMaterial);
+	Effect::Initialise();
 }
 
 void EffectTextFadeIn::Update()
@@ -994,6 +1079,50 @@ void EffectTextFadeIn::Update()
 	memcpy(TempPtr + ConstBufferLen, mAlphaStage, sizeof(float) * mTextCount);
 	ConstBufferLen += sizeof(float) * mTextCount;
 	Mat->SetConstBufferLen(ConstBufferLen);
+	Effect::Update();
+}
+//-----------------------------------------------------------------------
+EffectTextFadeOut::EffectTextFadeOut()
+{
+	mTextColor = Vector4::ZERO;
+}
+
+EffectTextFadeOut::~EffectTextFadeOut()
+{
+	MaterialManager* MatMgr = Scene::GetCurrentScene()->GetMaterialManager();
+	MatMgr->DestroyMaterial(mAttachMesh->GetMaterial());
+	mAttachMesh->SetMaterial(mOriginalMaterial);
+}
+
+void EffectTextFadeOut::SetTextColor(Vector4& TextColor)
+{
+	mTextColor = TextColor;
+}
+
+void EffectTextFadeOut::Initialise()
+{
+	mOriginalMaterial = mAttachMesh->GetMaterial();
+	MaterialManager* MatMgr = Scene::GetCurrentScene()->GetMaterialManager();
+	Material* CurrentMaterial = MatMgr->CreateMaterial(SimpleTextFadeOut);
+
+	CurrentMaterial->SetTexture(mOriginalMaterial->GetTexture(0), 0);
+	mAttachMesh->SetMaterial(CurrentMaterial);
+	Effect::Initialise();
+}
+
+void EffectTextFadeOut::Update()
+{
+	float Alpha = 1.0f - CalculateCurrentAlpha();
+	// Calculate alpha range
+	Material* Mat = mAttachMesh->GetMaterial();
+	char* TempPtr = Mat->GetConstBufferPointer();
+	int ConstBufferLen = 0;
+	memcpy(TempPtr, &mTextColor, sizeof(Vector4));
+	ConstBufferLen += sizeof(Vector4);
+	memcpy(TempPtr + ConstBufferLen, &Alpha, sizeof(float));
+	ConstBufferLen += sizeof(float);
+	Mat->SetConstBufferLen(ConstBufferLen);
+	Effect::Update();
 }
 
 //-----------------------------------------------------------------------
@@ -1007,7 +1136,7 @@ EffectManager::~EffectManager()
 
 }
 
-Effect* EffectManager::CreateEffect(std::string Name, Effect_Type ET, float TotalTime, bool IsLoop, bool AutoDestroy, float Acceleration, Mesh* M, SceneNode* S /* = nullptr */, const char* NewTexturePath/* = nullptr*/)
+Effect* EffectManager::CreateEffect(std::string Name, Effect_Type ET, float TotalTime, bool IsLoop, bool AutoDestroy, float Acceleration, Mesh* M, SceneNode* S /* = nullptr */, const char* NewTexturePath/* = nullptr*/, unsigned int DestroyElement/* = 0*/, Effect::EffectListener* Listener/* = nullptr*/)
 {
 	if (mEffectArray.find(Name) != mEffectArray.end())
 	{
@@ -1122,6 +1251,11 @@ Effect* EffectManager::CreateEffect(std::string Name, Effect_Type ET, float Tota
 		E = new EffectTextFadeIn;
 		break;
 	}
+	case Effect_Text_Fade_Out:
+	{
+		E = new EffectTextFadeOut;
+		break;
+	}
 	default:
 		break;
 	}
@@ -1129,11 +1263,14 @@ Effect* EffectManager::CreateEffect(std::string Name, Effect_Type ET, float Tota
 	{
 		if(NewTexturePath)
 			E->mNextTexturePath = NewTexturePath;
-		E->SetName(Name);
+		E->mName = Name;
 		E->mTotalTime = TotalTime;
 		E->mLoop = IsLoop;
+		E->mDestroyElements = DestroyElement;
 		E->mAutoDestroy = AutoDestroy;
 		E->mAcceleration = Acceleration;
+		E->mListener = Listener;
+		E->mEffectType = ET;
 		E->SetAttachMesh(M);
 		E->SetAttachSceneNode(S);
 		E->Initialise();
@@ -1170,6 +1307,7 @@ void EffectManager::Update()
 
 	for (it = mEffectArray.begin(); it != mEffectArray.end(); it++)
 	{
-		it->second->Update();
+		if(it->second->IsEnd() == false)
+			it->second->Update();
 	}
 }

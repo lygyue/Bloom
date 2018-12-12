@@ -69,7 +69,7 @@ bool RenderSystemD3D11::Initialise(int Width, int Height, HWND Hwnd)
  		D3D_FEATURE_LEVEL_9_1
 	};
 	UINT NumFeatureLevels = ARRAYSIZE(FeatureLevels);
-	UINT createFlags = 0;//D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+	UINT createFlags = 0;// D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 	D3D_FEATURE_LEVEL FeatureLevel = D3D_FEATURE_LEVEL_11_0;
 	HRESULT hr = D3D11CreateDevice(Adapter
 		, D3D_DRIVER_TYPE_HARDWARE

@@ -439,9 +439,26 @@ static char* DefaultPixelShaderSrcSimpleTextFadeIn =
 "	return Col;"
 "}";
 
+static char* DefaultPixelShaderSrcSimpleTextFadeOut =
+"cbuffer SceneConstantBuffer : register(b0)"
+"{"
+"	float4x4 ProjViewWorld;"
+"	float4 TextColor;"
+"	float Alpha;"
+"}"
+"Texture2D Texture   : register(t0); SamplerState Linear : register(s0); "
+"float4 main(in float4 Position : SV_Position, in float2 TexCoord : TEXCOORD0) : SV_Target"
+"{"
+"	float2 TexCol = Texture.Sample(Linear, TexCoord).rg; "
+"	float4 Col = TexCol.r * TextColor;"
+"	float a = Alpha;"
+"	Col.a = TexCol.g * a;"
+"	return Col;"
+"}";
+
 std::string StandardShaderName[CutomShader] = { "Simple_Black", "Simple_White", "Simple_Red", "Simple_Green", "Simple_Blue", "Simple_Texture_Sample" ,
 "Simple_Fade","Simple_Fade_In_Out", "Simple_N_B_N", "Simple_L_R_L", "Simple_Elipse_Scale", "Simple_Layer_Alpha", "Simple_Helix", "SimpleLighting", "SimpleInOutAndBlurBlend",
-"Simple_PerlinNoise", "Simple_UScroll", "Simple_FogSimulation", "Simple_SampleWithBlur", "Simple_FontSample", "Simple_TextFadeIn"};
+"Simple_PerlinNoise", "Simple_UScroll", "Simple_FogSimulation", "Simple_SampleWithBlur", "Simple_FontSample", "Simple_TextFadeIn", "Simple_TextFadeOut"};
 
 Shader::Shader()
 {
@@ -583,6 +600,7 @@ void ShaderManager::InitialiseStandardShaders()
 	CreateCustomShader(StandardShaderName[SimpleFogSimulation], DefaultStandardSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleFogSimulation, ShaderElementFlag);
 	CreateCustomShader(StandardShaderName[SimpleSampleWithBlur], DefaultStandardSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleSampleWithBlur, ShaderElementFlag);
 	CreateCustomShader(StandardShaderName[SimpleFontSample], DefaultStandardSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleFontSample, ShaderElementFlag);
+	CreateCustomShader(StandardShaderName[SimpleTextFadeOut], DefaultStandardSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleTextFadeOut, ShaderElementFlag);
 	ShaderElementFlag |= Ele_BlendIndices;
 	CreateCustomShader(StandardShaderName[SimpleTextFadeIn], DefaultTextSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleTextFadeIn, ShaderElementFlag);
 }
