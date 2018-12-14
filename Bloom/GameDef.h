@@ -37,3 +37,4 @@ enum ElementType
 	ElementEffect			= 1 << 7,
 	ElementAnimation		= 1 << 8,
 };
+

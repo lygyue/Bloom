@@ -96,7 +96,7 @@ void Player::Update()
 		Result = CM->CalculateCollisionList(mPlayerCollision);
 		for each(Collision* C in Result)
 		{
-			if (C->GetBlockProperty() == Block_Apple)
+			if (C->GetBlockProperty() == Block_Apple_Red)
 			{
 				SceneNode* SN = C->GetAttachSceneNode();
 				SN->GetParentSceneNode()->RemoveAndDestroyChild(SN);

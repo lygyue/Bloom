@@ -8,6 +8,7 @@
  */
 #include "Texture.h"
 #include "Scene.h"
+#include "RenderSystem.h"
 #include <stdio.h>
 
 D3d11Texture::D3d11Texture()

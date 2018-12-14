@@ -14,6 +14,9 @@
 #include "Collision.h"
 #include "Font.h"
 #include "Text.h"
+#include "ResourceManager.h"
+#include "RenderSystem.h"
+#include "SceneNode.h"
 
 Scene* Scene::CurrentScene = nullptr;
 Scene::Scene()
@@ -321,6 +324,7 @@ void Scene::InitialiseScene()
 	Mat->SetTexture(Tex);
 	M->SetMaterial(Mat);
 	FlagNode->AttachMesh(M);
+	mCollisionManager->CreateCollision(Pos[1], Pos[3], true, FlagNode, Block_Final_Flag);
 
 	// Bloom
 	Width = 50;
@@ -387,7 +391,7 @@ void Scene::InitialiseScene()
 	BS.StartTexCoordY = 84;
 	BS.EndTexCoordX = 136 + 66;
 	BS.EndTexCoordY = 84 + 66;
-	BI.BP = Block_Apple;
+	BI.BP = Block_Apple_Red;
 	BI.StartTexCoordX = BS.StartTexCoordX;
 	BI.StartTexCoordY = BS.StartTexCoordY;
 	BI.EndTexCoordX = BS.EndTexCoordX;
@@ -407,7 +411,7 @@ void Scene::InitialiseScene()
 	BS.StartTexCoordY = 84;
 	BS.EndTexCoordX = 200 + 66;
 	BS.EndTexCoordY = 84 + 66;
-	BI.BP = Block_Apple;
+	BI.BP = Block_Apple_Yellow;
 	BI.StartTexCoordX = BS.StartTexCoordX;
 	BI.StartTexCoordY = BS.StartTexCoordY;
 	BI.EndTexCoordX = BS.EndTexCoordX;
@@ -427,7 +431,7 @@ void Scene::InitialiseScene()
 	BS.StartTexCoordY = 28;
 	BS.EndTexCoordX = 370 + 116;
 	BS.EndTexCoordY = 28 + 170;
-	BI.BP = Block_Apple;
+	BI.BP = Block_Circle_Carmine;
 	BI.StartTexCoordX = BS.StartTexCoordX;
 	BI.StartTexCoordY = BS.StartTexCoordY;
 	BI.EndTexCoordX = BS.EndTexCoordX;
@@ -447,7 +451,7 @@ void Scene::InitialiseScene()
 	BS.StartTexCoordY = 28;
 	BS.EndTexCoordX = 522 + 116;
 	BS.EndTexCoordY = 28 + 170;
-	BI.BP = Block_Apple;
+	BI.BP = Block_Circle_Yellow;
 	BI.StartTexCoordX = BS.StartTexCoordX;
 	BI.StartTexCoordY = BS.StartTexCoordY;
 	BI.EndTexCoordX = BS.EndTexCoordX;
@@ -606,6 +610,11 @@ int Scene::GetWindowWidth() const
 int Scene::GetWindowHeight() const
 {
 	return mWindowHeight;
+}
+
+void Scene::RefreshScore(int CurrentScore)
+{
+
 }
 
 void Scene::OnInitialise(Effect* E)

@@ -13,11 +13,13 @@
 #include "Material.h"
 #include "Mesh.h"
 #include "Scene.h"
+#include "RenderSystem.h"
 #include "Timer.h"
 #include "Math/Vector2.h"
 #include "Functional.h"
 #include "Math/PerlinNoise.h"
 #include "Math/SimpleMath.h"
+#include "SceneNode.h"
 
 Effect::Effect()
 {

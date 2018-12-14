@@ -8,6 +8,7 @@
  */
 #include "Shader.h"
 #include "Scene.h"
+#include "RenderSystem.h"
 
 static char* DefaultStandardVertexShaderSrc =
 "float4x4 ProjViewWorld;"

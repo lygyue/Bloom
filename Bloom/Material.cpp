@@ -9,6 +9,7 @@
 
 #include "Material.h"
 #include "Scene.h"
+#include "RenderSystem.h"
 
 std::string StandardMaterialName[CutomShader] = { "Simple_Black", "Simple_White", "Simple_Red", "Simple_Green", "Simple_Blue", "Simple_Texture_Sample" };
 Material::Material(std::string Name)

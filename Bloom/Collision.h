@@ -17,9 +17,14 @@ class SceneNode;
 enum BlockPro
 {
 	Block_None,
-	Block_Apple,
-	Block_DecreaseLife,
+	Block_Apple_Red,
+	Block_Apple_Yellow,
+	Block_Circle_Carmine,
+	Block_Circle_Yellow,
+	Block_Bullet_DecreaseLife,
 	Block_Die,
+	Block_Final_Flag,
+	Block_Max,
 };
 class Collision
 {

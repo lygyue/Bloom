@@ -15,6 +15,7 @@
 #include "Math/Vector4.h"
 #include "Math/SimpleMath.h"
 #include "Scene.h"
+#include "Mesh.h"
 
 Text::Text()
 {

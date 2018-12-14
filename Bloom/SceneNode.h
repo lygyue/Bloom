@@ -16,7 +16,6 @@
 #include "RenderGroupManager.h"
 #include <vector>
 
-
 class SceneNode
 {
 	friend class Scene;

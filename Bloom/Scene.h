@@ -8,14 +8,7 @@
  */
 #pragma once
 #include "Common.h"
-#include "RenderSystem.h"
-#include "RenderGroupManager.h"
-#include "ResourceManager.h"
 #include "EffectManager.h"
-#include "Material.h"
-#include "Mesh.h"
-#include "Texture.h"
-#include "SceneNode.h"
 #include "GameDef.h"
 #include "Timer.h"
 
@@ -106,11 +99,19 @@ private:
 	XMMATRIX mViewProjectionMatrix;
 };
 enum BlockPro;
+enum RenderGroup;
 class CollisionManager;
 class AnimationManager;
 class FontManager;
 class TextManager;
+class RenderGroupManager;
+class RenderSystemD3D11;
 class Text;
+class TextureManager;
+class ResourceManager;
+class MaterialManager;
+class SceneNode;
+class MeshManager;
 class Scene : public Effect::EffectListener, public ITimerListener
 {
 	friend class GameLogicManager;
@@ -151,6 +152,9 @@ public:
 
 	int GetWindowWidth() const;
 	int GetWindowHeight() const;
+
+	void RefreshScore(int CurrentScore);
+
 public:
 	// override from Effect::EffectListener
 	virtual void OnInitialise(Effect* E) override;
