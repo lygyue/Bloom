@@ -16,19 +16,21 @@
 #include "SceneNode.h"
 #include "Scene.h"
 #include "Collision.h"
+#include "Score.h"
 
 Player::Player(std::string Name)
 {
-	mSpeed = 2 * SCREEN_SPEED;
+	mSpeed = 4 * SCREEN_SPEED;
 	mName = Name;
 	mMoveDirection = 0;
 	mPlayerSceneNode = nullptr;
 	mPlayerCollision = nullptr;
+	mPlayerScore = nullptr;
 }
 
 Player::~Player()
 {
-
+	SAFE_DELETE(mPlayerScore);
 }
 
 std::string Player::GetName() const
@@ -66,9 +68,20 @@ Collision* Player::GetPlayerCollision() const
 	return mPlayerCollision;
 }
 
+ScoreSystem* Player::GetScoreSystem() const
+{
+	return mPlayerScore;
+}
+
+void Player::Initialise()
+{
+	mPlayerScore = new ScoreSystem;
+}
+
 void Player::Update()
 {
 	if (mPlayerSceneNode == nullptr) return;
+
 	float Delta = Timer::GetInstance()->GetDeltaFloat();
 	if (mMoveDirection > 0)
 	{
@@ -96,11 +109,39 @@ void Player::Update()
 		Result = CM->CalculateCollisionList(mPlayerCollision);
 		for each(Collision* C in Result)
 		{
-			if (C->GetBlockProperty() == Block_Apple_Red)
+			BlockPro BP = C->GetBlockProperty();
+			switch (BP)
 			{
+			case Block_Apple_Red:
+			case Block_Apple_Yellow:
+			case Block_Circle_Carmine:
+			case Block_Circle_Yellow:
+			{
+				// they do the same action
+				mPlayerScore->CollisionTo(BP);
 				SceneNode* SN = C->GetAttachSceneNode();
 				SN->GetParentSceneNode()->RemoveAndDestroyChild(SN);
 				CM->DestroyCollision(C);
+				break;
+			}
+			case Block_Bullet_DecreaseLife:
+			{
+				mPlayerScore->CollisionTo(BP);
+				C->SetVisible(false);
+				// set a timer to restart the collision
+				Timer::GetInstance()->AddOnceTimer(this, 0, BULLET_COLLISION_TIME, C);
+				break;
+			}
+			case Block_Die:
+			{
+				break;
+			}
+			case Block_Final_Flag:
+			{
+				break;
+			}
+			default:
+				break;
 			}
 		}
 	}
@@ -197,4 +238,13 @@ void Player::OnRButtonDbclk(int x, int y, unsigned int wParam)
 void Player::OnMouseMove(int x, int y, unsigned int wParam)
 {
 
+}
+
+void Player::OnTimer(unsigned int EventID, void* UserData)
+{
+	if (EventID == 0)
+	{
+		Collision* C = static_cast<Collision*>(UserData);
+		C->SetVisible(true);
+	}
 }

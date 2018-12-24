@@ -90,6 +90,11 @@ void SceneNode::SetScale(const Vector3& Scale)
 	}
 }
 
+SceneNode* SceneNode::CreateChild(Vector3 Pos, Quaternion Rot, Vector3 Scale, RenderGroup RG/* = RenderGroup_Normal*/)
+{
+	return CreateChild(GetAutoName(), Pos, Rot, Scale, RG);
+}
+
 SceneNode* SceneNode::CreateChild(std::string Name, Vector3 Pos, Quaternion Rot, Vector3 Scale, RenderGroup RG/* = RenderGroup_Normal*/)
 {
 	SceneNode* Child = new SceneNode(Name);

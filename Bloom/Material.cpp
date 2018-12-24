@@ -151,7 +151,6 @@ D3d11Texture* Material::GetMainTexture() const
 MaterialManager::MaterialManager()
 {
 	mShaderManager = new ShaderManager;
-	mCurrentMaterialIndex = 0;
 }
 
 MaterialManager::~MaterialManager()
@@ -162,14 +161,6 @@ MaterialManager::~MaterialManager()
 		SAFE_DELETE(it->second);
 	}
 	mMaterialArray.clear();
-}
-
-std::string MaterialManager::GetAutoName()
-{
-	char szTemp[128];
-	memset(szTemp, 0, 128);
-	sprintf_s(szTemp, 128, "%s%d", "Material_Auto_Generate_Name_", mCurrentMaterialIndex++);
-	return szTemp;
 }
 
 void MaterialManager::Initialise()

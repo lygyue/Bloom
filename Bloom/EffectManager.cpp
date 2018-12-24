@@ -1138,6 +1138,11 @@ EffectManager::~EffectManager()
 
 }
 
+Effect* EffectManager::CreateEffect(Effect_Type ET, float TotalTime, bool IsLoop, bool AutoDestroy, float Acceleration, Mesh* M, SceneNode* S /* = nullptr */, const char* NewTexturePath/* = nullptr*/, unsigned int DestroyElement/* = 0*/, Effect::EffectListener* Listener/* = nullptr*/)
+{
+	return CreateEffect(GetAutoName(), ET, TotalTime, IsLoop, AutoDestroy, Acceleration, M, S, NewTexturePath, DestroyElement, Listener);
+}
+
 Effect* EffectManager::CreateEffect(std::string Name, Effect_Type ET, float TotalTime, bool IsLoop, bool AutoDestroy, float Acceleration, Mesh* M, SceneNode* S /* = nullptr */, const char* NewTexturePath/* = nullptr*/, unsigned int DestroyElement/* = 0*/, Effect::EffectListener* Listener/* = nullptr*/)
 {
 	if (mEffectArray.find(Name) != mEffectArray.end())

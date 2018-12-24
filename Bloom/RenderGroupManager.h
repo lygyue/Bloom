@@ -18,6 +18,7 @@ enum RenderGroup
 	RenderGroup_BeforeNormal,
 	RenderGroup_Normal,
 	RenderGroup_AfterNormal,
+	RenderGroup_Bullet,					// bullet is a node animation ,must be in front of other collisions.
 	RenderGroup_Player,
 	RenderGroup_UI,
 	RenderGroup_TEXT,

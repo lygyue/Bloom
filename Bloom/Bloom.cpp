@@ -46,7 +46,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_BLOOM));
 
     MSG msg;
-	GLM = new GameLogicManager;
+	GLM = GameLogicManager::GetInstance();
 	if (GLM->Initialise(g_WindowWnd) == false)
 	{
 		SAFE_DELETE(GLM);
@@ -68,7 +68,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		GLM->Update();
 	}
 
-	SAFE_DELETE(GLM);
+	GameLogicManager::ReleaseInstance();
+	GLM = nullptr;
 
     return (int) msg.wParam;
 }

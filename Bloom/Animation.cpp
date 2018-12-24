@@ -74,7 +74,7 @@ bool Animation::GetIsPause() const
 	return mIsPause;
 }
 
-bool Animation::GetIsEnd() const
+bool Animation::IsEnd() const
 {
 	return mIsEnd;
 }
@@ -84,7 +84,7 @@ void Animation::SetIsAutoDestroy(bool IsAutoDestroy)
 	mIsAutoDestroy = IsAutoDestroy;
 }
 
-bool Animation::GetIsAutoDestroy() const
+bool Animation::IsAutoDestroy() const
 {
 	return mIsAutoDestroy;
 }
@@ -113,6 +113,27 @@ void NodeAnimation::AddPoint(Vector3 Pos, Quaternion Rotate, Vector3 Scale, floa
 	mTimes.push_back(fTime);
 }
 
+void NodeAnimation::AddRoundPoint(float fTime)
+{
+	Vector3 Pos = mSpline->getPoint(0);
+	Quaternion Rotate = mRotations[0];
+	Vector3 Scale = mScales[0];
+	AddPoint(Pos, Rotate, Scale, fTime);
+}
+
+void NodeAnimation::GetPoint(Vector3& Pos, Quaternion& Rotate, Vector3& Scale, float& fTime, int Index) const
+{
+	if (Index >= (int)mRotations.size())
+	{
+		return;
+	}
+	Pos = mSpline->getPoint(Index);
+	Rotate = mRotations[Index];
+	Scale = mScales[Index];
+	fTime = mTimes[Index];
+	return;
+}
+
 void NodeAnimation::AttachNode(SceneNode* Node)
 {
 	mAttachNode = Node;
@@ -123,7 +144,7 @@ void NodeAnimation::Update()
 	if (mIsPause) return;
 	if (mAttachNode == nullptr) return;
 	mCurrentTime += Timer::GetInstance()->GetDeltaFloat();
-	if (mCurrentTime > mAnimationLength)
+	if (mCurrentTime >= mAnimationLength)
 	{
 		if (mIsLoop)
 		{
@@ -132,11 +153,7 @@ void NodeAnimation::Update()
 		else
 		{
 			mIsEnd = true;
-			if (mIsAutoDestroy)
-			{
-				Scene::GetCurrentScene()->GetAnimationManager()->DestroyAnimationNextFrame(this);
-			}
-			return;
+			mCurrentTime = mAnimationLength;
 		}
 	}
 	size_t Index = 0;
@@ -182,6 +199,11 @@ AnimationManager::~AnimationManager()
 
 }
 
+Animation* AnimationManager::CreateAnimation(AnimationType AT)
+{
+	return CreateAnimation(GetAutoName(), AT);
+}
+
 Animation* AnimationManager::CreateAnimation(std::string Name, AnimationType AT)
 {
 	if (mAnimationMap.find(Name) != mAnimationMap.end())
@@ -189,6 +211,7 @@ Animation* AnimationManager::CreateAnimation(std::string Name, AnimationType AT)
 		return mAnimationMap[Name];
 	}
 	Animation* Ani = nullptr;
+	// TO DO...
 	switch (AT)
 	{
 	case Animation_Node:
@@ -223,20 +246,22 @@ bool AnimationManager::DestroyAnimation(Animation* Ani)
 	return true;
 }
 
-void AnimationManager::DestroyAnimationNextFrame(Animation* Ani)
-{
-	mDelayDestroyArray.push_back(Ani);
-}
-
 void AnimationManager::Update()
 {
-	for (size_t i = 0; i < mDelayDestroyArray.size(); i++)
-	{
-		DestroyAnimation(mDelayDestroyArray[i]);
-	}
-	mDelayDestroyArray.clear();
-
 	std::map<std::string, Animation*>::iterator it;
+	for (it = mAnimationMap.begin(); it != mAnimationMap.end(); )
+	{
+		if (it->second->IsEnd() && it->second->IsAutoDestroy())
+		{
+			SAFE_DELETE(it->second);
+			it = mAnimationMap.erase(it);
+		}
+		else
+		{
+			it++;
+		}
+	}
+
 	for (it = mAnimationMap.begin(); it != mAnimationMap.end(); it++)
 	{
 		it->second->Update();

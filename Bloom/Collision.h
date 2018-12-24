@@ -50,6 +50,8 @@ public:
 	void SetAttachSceneNode(SceneNode* SN);
 	SceneNode* GetAttachSceneNode() const;
 
+	void SetVisible(bool Visible);
+	bool GetVisible() const;
 	bool GetIsStatic() const;
 	// this function been called while attach scene node been changed.
 	void RecalculateCollision();
@@ -61,6 +63,7 @@ protected:
 
 
 	bool mIsStatic;
+	bool mIsVisible;
 	// mMax and mMin will not be changed while it is a static collision
 	// mMax and mMin will be recalculated while dynamic state and collision event occur.
 	Vector3 mMax;

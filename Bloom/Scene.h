@@ -123,6 +123,7 @@ public:
 	void Update();
 public:
 	SceneNode* GetRootSceneNode() const;
+	SceneNode* GetNodeFollowCamera() const;
 	SceneNode* GetBackGroundNode() const;
 	RenderSystemD3D11* GetRenderSystem() const;
 	RenderGroupManager* GetRenderGroupManager() const;
@@ -152,16 +153,13 @@ public:
 
 	int GetWindowWidth() const;
 	int GetWindowHeight() const;
-
-	void RefreshScore(int CurrentScore);
-
 public:
 	// override from Effect::EffectListener
 	virtual void OnInitialise(Effect* E) override;
 	virtual void OnEnd(Effect* E) override;
 	virtual void OnDestroy(Effect* E) override;
 	// override from ITimerListener
-	virtual void OnTimer(unsigned int EventID) override;
+	virtual void OnTimer(unsigned int EventID, void* UserData) override;
 protected:
 	struct BlockInfo
 	{
@@ -214,6 +212,7 @@ protected:
 	void CreateFrameRateText();
 	void SwitchToNextBackGround();
 	void CreateStartPoemEffect(int Index, bool IsFadeIn);
+	void CreateBullets();
 private:
 	SceneNode* mRootSceneNode;
 	SceneNode* mBackGroundNode;
@@ -237,6 +236,7 @@ private:
 
 	Text* mFrameRateText;
 	Text* mFrameRateTextTitle;
+	SceneNode* mNodeFollowCamera;
 	SceneNode* mFrameRateTextNode;
 	SceneNode* mFrameRateTextTitleNode;
 	bool mRenderFrameRate;

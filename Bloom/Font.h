@@ -113,6 +113,9 @@ class FontManager
 	friend class Scene;
 public:
 	Font* GetFont(FontType FT, unsigned int FontSize, unsigned int FontStyle = FSNormal, int OutLineWidth = 0, int BoldWidth = 0, float RotateDegree = 0);
+
+	Font* GetStartPoemFont();
+	Font* GetCommonFont();
 protected:
 	FontManager();
 	~FontManager();

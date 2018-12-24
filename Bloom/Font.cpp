@@ -507,3 +507,13 @@ Font* FontManager::GetFont(FontType FT, unsigned int FontSize, unsigned int Font
 	mFontArray.push_back(F);
 	return F;
 }
+
+Font* FontManager::GetStartPoemFont()
+{
+	return GetFont(YGYXingCao, 64, FSOutline | FSBold, 8, 4);
+}
+
+Font* FontManager::GetCommonFont()
+{
+	return GetFont(MFMengYuan, 16, FSOutline, 2);
+}

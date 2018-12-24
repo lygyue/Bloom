@@ -13,6 +13,7 @@
 #include <list>
 #include <map>
 #include <xstring>
+#include "GameDef.h"
 #include "Math/SimpleMath.h"
 #include "Math/Vector4.h"
 #include "Math/Vector3.h"
@@ -329,6 +330,7 @@ class EffectManager
 	friend class Scene;
 public:
 	Effect* CreateEffect(std::string Name, Effect_Type ET, float TotalTime, bool IsLoop, bool AutoDestroy, float Acceleration, Mesh* M, SceneNode* S = nullptr, const char* NewTexturePath = nullptr, unsigned int DestroyElement = 0, Effect::EffectListener* Listener = nullptr);
+	Effect* CreateEffect(Effect_Type ET, float TotalTime, bool IsLoop, bool AutoDestroy, float Acceleration, Mesh* M, SceneNode* S = nullptr, const char* NewTexturePath = nullptr, unsigned int DestroyElement = 0, Effect::EffectListener* Listener = nullptr);
 
 	void DestroyEffect(std::string Name);
 protected:
@@ -338,4 +340,5 @@ protected:
 	void Update();
 private:
 	std::map<std::string, Effect*> mEffectArray;
+	GET_AUTO_NAME("Effect")
 };

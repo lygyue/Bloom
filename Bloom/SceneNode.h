@@ -8,6 +8,7 @@
  */
 #pragma once
 #include "Common.h"
+#include "GameDef.h"
 #include "Math/SimpleMath.h"
 #include "Math/Vector3.h"
 #include "Math/Quaternion.h"
@@ -35,6 +36,7 @@ public:
 	void SetScale(const Vector3& Scale);
 
 	SceneNode* CreateChild(std::string Name, Vector3 Pos, Quaternion Rot, Vector3 Scale, RenderGroup RG = RenderGroup_Normal);
+	SceneNode* CreateChild(Vector3 Pos, Quaternion Rot, Vector3 Scale, RenderGroup RG = RenderGroup_Normal);
 
 	bool RemoveAndDestroyChild(std::string Name);
 	bool RemoveAndDestroyChild(SceneNode* SN);
@@ -88,4 +90,5 @@ private:
 
 	std::vector<SceneNode*> mChildArray;
 	std::vector<Mesh*> mAttachMeshArray;
+	GET_AUTO_NAME("SceneNode")
 };

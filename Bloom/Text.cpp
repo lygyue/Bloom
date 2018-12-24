@@ -232,3 +232,9 @@ bool TextManager::DestroyText(Text* T)
 	SAFE_DELETE(T);
 	return true;
 }
+
+Vector4 TextManager::GetTextColorByType(TextColorType TCT) const
+{
+	Vector4 TextColor[TextColorMax] = { Vector4(0.8f, 0.5f, 0.3f, 1), Vector4(1, 1, 1, 1)};
+	return TextColor[unsigned int(TCT)];
+}

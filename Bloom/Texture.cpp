@@ -112,6 +112,49 @@ D3d11Texture::~D3d11Texture()
 	SAFE_DELETE(mDepthBuffer);
 }
 
+bool D3d11Texture::BlitToTexture(unsigned char* Data, int Len)
+{
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
+	//  Disable GPU access to the vertex buffer data.
+	auto d3dContext = Scene::GetCurrentScene()->GetRenderSystem()->GetD3d11Context();
+	HRESULT hr = d3dContext->Map(mTexture, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	if (hr == S_OK)
+	{
+		//  Update the vertex buffer here.
+		memcpy(mappedResource.pData, Data, Len);
+		//  Reenable GPU access to the vertex buffer data.
+		d3dContext->Unmap(mTexture, 0);
+		return true;
+	}
+	return false;
+}
+
+bool D3d11Texture::Map(BYTE*& lpData, UINT &pitch)
+{
+	if (!mCpuAccess) return false;
+	HRESULT err;
+	DXGI_MAPPED_RECT map;
+	HRESULT hr = mTexture->QueryInterface(__uuidof(IDXGISurface1), (void **)&mSurface);
+
+	if (FAILED(err = mSurface->Map(&map, DXGI_MAP_READ)))
+	{
+		OutputDebugStringA(("D3D11Texture::Map: map failed"));
+		return false;
+	}
+
+	lpData = (BYTE*)map.pBits;
+	pitch = map.Pitch;
+
+	return true;
+}
+
+void D3d11Texture::Unmap()
+{
+	mSurface->Unmap();
+	SAFE_RELEASE(mSurface);
+}
+//-----------------------------------------------------------------------
 TextureManager::TextureManager()
 {
 
@@ -122,14 +165,14 @@ TextureManager::~TextureManager()
 
 }
 
-D3d11Texture* TextureManager::CreateRenderTarget(std::string Name, ID3D11Device* Device, int Width, int Height, DXGI_FORMAT format)
+D3d11Texture* TextureManager::CreateRenderTarget(std::string Name, ID3D11Device* Device, int Width, int Height, DXGI_FORMAT Format)
 {
 	if (mTextureArray.find(Name) != mTextureArray.end())
 	{
 		return mTextureArray[Name];
 	}
 	D3d11Texture* target = new D3d11Texture();
-	if (target->Initialise(Name, Device, Width, Height, format, 1, true, false) == false)
+	if (target->Initialise(Name, Device, Width, Height, Format, 1, true, false) == false)
 	{
 		SAFE_DELETE(target);
 		return NULL;
@@ -139,14 +182,14 @@ D3d11Texture* TextureManager::CreateRenderTarget(std::string Name, ID3D11Device*
 	return target;
 }
 
-D3d11Texture* TextureManager::CreateTexture(std::string Name, ID3D11Device* Device, int Width, int Height, DXGI_FORMAT format /* = DXGI_FORMAT_B8G8R8A8_UNORM */, int MipLevel /* = 1 */, bool CPUAccess/* = false*/)
+D3d11Texture* TextureManager::CreateTexture(std::string Name, ID3D11Device* Device, int Width, int Height, DXGI_FORMAT Format /* = DXGI_FORMAT_B8G8R8A8_UNORM */, int MipLevel /* = 1 */, bool CPUAccess/* = false*/)
 {
 	if (mTextureArray.find(Name) != mTextureArray.end())
 	{
 		return mTextureArray[Name];
 	}
 	D3d11Texture* texture = new D3d11Texture();
-	if (texture->Initialise(Name, Device, Width, Height, format, MipLevel, false, CPUAccess) == false)
+	if (texture->Initialise(Name, Device, Width, Height, Format, MipLevel, false, CPUAccess) == false)
 	{
 		SAFE_DELETE(texture);
 		return NULL;
@@ -154,6 +197,39 @@ D3d11Texture* TextureManager::CreateTexture(std::string Name, ID3D11Device* Devi
 	mTextureArray[Name] = texture;
 	//
 	return texture;
+}
+
+D3d11Texture* TextureManager::CreateRenderTarget(ID3D11Device* Device, int Width, int Height, DXGI_FORMAT Format /* = DXGI_FORMAT_B8G8R8A8_UNORM */)
+{
+	return CreateRenderTarget(GetAutoName(), Device, Width, Height, Format);
+}
+
+D3d11Texture* TextureManager::CreateTexture(ID3D11Device* Device, int Width, int Height, DXGI_FORMAT Format /* = DXGI_FORMAT_B8G8R8A8_UNORM */, int MipLevel /* = 1 */, bool CPUAccess /* = false */)
+{
+	return CreateTexture(GetAutoName(), Device, Width, Height, Format, MipLevel, CPUAccess);
+}
+
+D3d11Texture* TextureManager::CreateRandomColorTexture()
+{
+	int Width = 4;
+	int Height = 4;
+	int MipLevel = 1;
+	DXGI_FORMAT Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+	bool CPUAccess = true;
+	ID3D11Device* Device = Scene::GetCurrentScene()->GetRenderSystem()->GetD3d11Device();
+	D3d11Texture* Tex = CreateTexture(Device, Width, Height, Format, MipLevel, CPUAccess);
+	int Len = 4 * 4 * sizeof(unsigned int);
+	unsigned char ColorData[4 * 4 * sizeof(unsigned int)];
+	for (int i = 0; i < 4 * 4; i++)
+	{
+		int Pos = i * sizeof(unsigned int);
+		ColorData[Pos + 0] = (unsigned char)RangeRandom(0.0f, 255.0f);
+		ColorData[Pos + 1] = (unsigned char)RangeRandom(0.0f, 255.0f);
+		ColorData[Pos + 2] = (unsigned char)RangeRandom(0.0f, 255.0f);
+		ColorData[Pos + 3] = 255;
+	}
+	Tex->BlitToTexture(ColorData, Len);
+	return Tex;
 }
 
 D3d11Texture* TextureManager::LoadTextureFromFile(std::string Name, ID3D11Device* Device, const char* FullFileName, bool IsDDS)
@@ -219,47 +295,4 @@ void TextureManager::DestroyTexture(D3d11Texture* Tex)
 	std::string Name = Tex->GetName();
 	mTextureArray.erase(Name);
 	SAFE_DELETE(Tex);
-}
-
-bool D3d11Texture::BlitToTexture(unsigned char* Data, int Len)
-{
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
-	//  Disable GPU access to the vertex buffer data.
-	auto d3dContext = Scene::GetCurrentScene()->GetRenderSystem()->GetD3d11Context();
-	HRESULT hr = d3dContext->Map(mTexture, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	if (hr == S_OK)
-	{
-		//  Update the vertex buffer here.
-		memcpy(mappedResource.pData, Data, Len);
-		//  Reenable GPU access to the vertex buffer data.
-		d3dContext->Unmap(mTexture, 0);
-		return true;
-	}
-	return false;
-}
-
-bool D3d11Texture::Map(BYTE*& lpData, UINT &pitch)
-{
-	if (!mCpuAccess) return false;
-	HRESULT err;
-	DXGI_MAPPED_RECT map;
-	HRESULT hr = mTexture->QueryInterface(__uuidof(IDXGISurface1), (void **)&mSurface);
-
-	if (FAILED(err = mSurface->Map(&map, DXGI_MAP_READ)))
-	{
-		OutputDebugStringA(("D3D11Texture::Map: map failed"));
-		return false;
-	}
-
-	lpData = (BYTE*)map.pBits;
-	pitch = map.Pitch;
-
-	return true;
-}
-
-void D3d11Texture::Unmap()
-{
-	mSurface->Unmap();
-	SAFE_RELEASE(mSurface);
 }

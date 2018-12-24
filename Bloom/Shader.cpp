@@ -59,6 +59,17 @@ static char* DefaultPixelShaderSrcBlue =
 "    return float4(0, 0, 1, 1); }";
 
 
+static char* DefaultPixelShaderSrcSimpleColor =
+"cbuffer SceneConstantBuffer : register(b0)"
+"{"
+"	float4x4 ProjViewWorld;"
+"	float4 Col;"
+"}"
+"float4 main(in float4 Position : SV_Position, in float2 TexCoord : TEXCOORD0) : SV_Target"
+"{"
+"	return Col;"
+"}";
+
 static char* DefaultPixelShaderSrcSimpleSample =
 "Texture2D Texture   : register(t0); SamplerState Linear : register(s0); "
 "float4 main(in float4 Position : SV_Position, in float2 TexCoord : TEXCOORD0) : SV_Target"
@@ -457,7 +468,7 @@ static char* DefaultPixelShaderSrcSimpleTextFadeOut =
 "	return Col;"
 "}";
 
-std::string StandardShaderName[CutomShader] = { "Simple_Black", "Simple_White", "Simple_Red", "Simple_Green", "Simple_Blue", "Simple_Texture_Sample" ,
+std::string StandardShaderName[CutomShader] = { "Simple_Black", "Simple_White", "Simple_Red", "Simple_Green", "Simple_Blue", "Simple_Color", "Simple_Texture_Sample" ,
 "Simple_Fade","Simple_Fade_In_Out", "Simple_N_B_N", "Simple_L_R_L", "Simple_Elipse_Scale", "Simple_Layer_Alpha", "Simple_Helix", "SimpleLighting", "SimpleInOutAndBlurBlend",
 "Simple_PerlinNoise", "Simple_UScroll", "Simple_FogSimulation", "Simple_SampleWithBlur", "Simple_FontSample", "Simple_TextFadeIn", "Simple_TextFadeOut"};
 
@@ -586,6 +597,7 @@ void ShaderManager::InitialiseStandardShaders()
 	CreateCustomShader(StandardShaderName[SimpleBlue], DefaultStandardVertexShaderSrc, DefaultPixelShaderSrcBlue, ShaderElementFlag);
 
 	ShaderElementFlag |= Ele_TexCoord0;
+	CreateCustomShader(StandardShaderName[SimpleColor], DefaultStandardSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleColor, ShaderElementFlag);
 	CreateCustomShader(StandardShaderName[SimpleTextureSample], DefaultStandardSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleSample, ShaderElementFlag);
 	CreateCustomShader(StandardShaderName[SimpleFade], DefaultStandardSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleFade, ShaderElementFlag);
 	CreateCustomShader(StandardShaderName[SimpleFadeInOut], DefaultStandardSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleFadeInOut, ShaderElementFlag);
@@ -604,6 +616,11 @@ void ShaderManager::InitialiseStandardShaders()
 	CreateCustomShader(StandardShaderName[SimpleTextFadeOut], DefaultStandardSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleTextFadeOut, ShaderElementFlag);
 	ShaderElementFlag |= Ele_BlendIndices;
 	CreateCustomShader(StandardShaderName[SimpleTextFadeIn], DefaultTextSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleTextFadeIn, ShaderElementFlag);
+}
+
+Shader* ShaderManager::CreateCustomShader(std::string VSD, std::string PSD, unsigned int ShaderElementFlag)
+{
+	return CreateCustomShader(GetAutoName(), VSD, PSD, ShaderElementFlag);
 }
 
 Shader* ShaderManager::CreateCustomShader(std::string Name, std::string VSD, std::string PSD, unsigned int ShaderElementFlag)

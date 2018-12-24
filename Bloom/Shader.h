@@ -8,6 +8,7 @@
  */
 #pragma once
 #include "Common.h"
+#include "GameDef.h"
 #include <map>
 enum ShaderType
 {
@@ -22,6 +23,7 @@ enum BaseShader
 	SimpleRed,
 	SimpleGreen,
 	SimpleBlue,
+	SimpleColor,
 	SimpleTextureSample,
 	SimpleFade,
 	SimpleFadeInOut,
@@ -83,6 +85,7 @@ class ShaderManager
 	friend class MaterialManager;
 public:
 	Shader* CreateCustomShader(std::string Name, std::string VSD, std::string PSD, unsigned int ShaderElementFlag);
+	Shader* CreateCustomShader(std::string VSD, std::string PSD, unsigned int ShaderElementFlag);
 	Shader* GetShaderByName(std::string Name);
 	Shader* GetShaderByType(BaseShader BS);
 
@@ -94,4 +97,5 @@ protected:
 	void InitialiseStandardShaders();
 private:
 	std::map<std::string, Shader*> mShaderArray;
+	GET_AUTO_NAME("Shader")
 };

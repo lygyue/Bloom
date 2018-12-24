@@ -9,6 +9,7 @@
 #pragma once
 #include "Common.h"
 #include "DataBuffer.h"
+#include "GameDef.h"
 #include <DDSTextureLoader.h>
 #include <WICTextureLoader.h>
 #include <map>
@@ -94,8 +95,14 @@ class TextureManager
 {
 	friend class Scene;
 public:
-	D3d11Texture* CreateRenderTarget(std::string Name, ID3D11Device* Device, int Width, int Height, DXGI_FORMAT format = DXGI_FORMAT_B8G8R8A8_UNORM);
-	D3d11Texture* CreateTexture(std::string Name, ID3D11Device* Device, int Width, int Height, DXGI_FORMAT format = DXGI_FORMAT_B8G8R8A8_UNORM, int MipLevel = 1, bool CPUAccess = false);
+	D3d11Texture* CreateRenderTarget(std::string Name, ID3D11Device* Device, int Width, int Height, DXGI_FORMAT Format = DXGI_FORMAT_B8G8R8A8_UNORM);
+	D3d11Texture* CreateTexture(std::string Name, ID3D11Device* Device, int Width, int Height, DXGI_FORMAT Format = DXGI_FORMAT_B8G8R8A8_UNORM, int MipLevel = 1, bool CPUAccess = false);
+
+	D3d11Texture* CreateRenderTarget(ID3D11Device* Device, int Width, int Height, DXGI_FORMAT format = DXGI_FORMAT_B8G8R8A8_UNORM);
+	D3d11Texture* CreateTexture(ID3D11Device* Device, int Width, int Height, DXGI_FORMAT format = DXGI_FORMAT_B8G8R8A8_UNORM, int MipLevel = 1, bool CPUAccess = false);
+
+	// random color texture, default is 4 * 4 rgba, without mipmap
+	D3d11Texture* CreateRandomColorTexture();
 
 	D3d11Texture* LoadTextureFromFile(std::string Name, ID3D11Device* Device, const char* FullFileName, bool IsDDS);
 	D3d11Texture* LoadTextureFromMemory(std::string Name, ID3D11Device* Device, unsigned char* FileData, int FileLength, bool IsDDS);
@@ -106,4 +113,6 @@ protected:
 	~TextureManager();
 private:
 	std::map<std::string, D3d11Texture*> mTextureArray;
+
+	GET_AUTO_NAME("Texture")
 };

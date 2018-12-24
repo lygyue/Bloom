@@ -10,12 +10,15 @@
  **********************************************/
 #pragma once
 #include "Common.h"
+#include "Timer.h"
 
 class SceneNode;
 class Collision;
-class Player
+class ScoreSystem;
+class Player : public ITimerListener
 {
 	friend class GameLogicManager;
+	friend class Scene;
 	enum MoveDirection
 	{
 		MD_Left = 1 << 0,
@@ -46,12 +49,20 @@ public:
 	void OnMouseMove(int x, int y, unsigned int wParam);
 	void OnLButtonDbclk(int x, int y, unsigned int wParam);
 	void OnRButtonDbclk(int x, int y, unsigned int wParam);
+
+public:
+	virtual void OnTimer(unsigned int EventID, void* UserData) override;
+protected:
+	ScoreSystem* GetScoreSystem() const;
 protected:
 	Player(std::string Name);
 	~Player();
 
+	void Initialise();
+
 	SceneNode* mPlayerSceneNode;
 	Collision* mPlayerCollision;
+	ScoreSystem* mPlayerScore;
 	std::string mName;
 	float mSpeed;
 	unsigned int mMoveDirection;

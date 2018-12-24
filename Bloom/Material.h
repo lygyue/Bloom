@@ -9,6 +9,7 @@
 #pragma once
 #include "Texture.h"
 #include "Shader.h"
+#include "GameDef.h"
 
 #define		MAX_CONST_BUFFER		128
 
@@ -66,9 +67,9 @@ protected:
 	~MaterialManager();
 
 	void Initialise();
-	std::string GetAutoName();
 private:
-	int mCurrentMaterialIndex;
 	std::map<std::string, Material*> mMaterialArray;
 	ShaderManager* mShaderManager;
+
+	GET_AUTO_NAME("Material")
 };

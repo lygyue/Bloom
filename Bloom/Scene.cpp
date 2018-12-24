@@ -17,6 +17,7 @@
 #include "ResourceManager.h"
 #include "RenderSystem.h"
 #include "SceneNode.h"
+#include "Score.h"
 
 Scene* Scene::CurrentScene = nullptr;
 Scene::Scene()
@@ -42,6 +43,7 @@ Scene::Scene()
 	mRenderFrameRate = false;
 	mWindowWidth = 0;
 	mWindowHeight = 0;
+	mNodeFollowCamera = nullptr;
 	mFrameRateText = nullptr;
 	mFrameRateTextTitle = nullptr;
 	mFrameRateTextNode = nullptr;
@@ -107,6 +109,7 @@ bool Scene::Initialise(HWND hWnd)
 	}
 	mMaterialManager->Initialise();
 	mBackGroundNode = mRootSceneNode->CreateChild("BackGround_Node", Vector3(0, 0, RenderGroupManager::GetRenderGroupDepth(RenderGroup_BackGroud)), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_BackGroud);
+	mNodeFollowCamera = mRootSceneNode->CreateChild("Follow_Camera__Node", Vector3(0, 0, 0), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_TEXT);
 	CreateBackGround();
 	CreateFrameRateText();
 	InitialiseScene();
@@ -138,6 +141,7 @@ void Scene::Update()
 		float Delta = Timer::GetInstance()->GetDeltaFloat();
 		float xOffset = (Delta / SCREEN_PASS_TIME) * 2.0f;
 		mCamera->Translate(xOffset, 0, 0);
+		mNodeFollowCamera->Translate(xOffset, 0, 0);
 	}
 	RenderOneFrame();
 	return;
@@ -223,6 +227,11 @@ SceneNode* Scene::GetRootSceneNode() const
 	return mRootSceneNode;
 }
 
+SceneNode* Scene::GetNodeFollowCamera() const
+{
+	return mNodeFollowCamera;
+}
+
 SceneNode* Scene::GetBackGroundNode() const
 {
 	return mBackGroundNode;
@@ -286,12 +295,14 @@ void Scene::BuildRandomSceneNode(BuildStruct& BS)
 			Max.x = Lerp(PercentMaxX, Pos[3].x, Pos[1].x);
 			Max.y = Lerp(PercentMaxY, Pos[3].y, Pos[1].y);
 			mCollisionManager->CreateCollision(Max, Min, BS.BlockArray[j].IsStatic, SN, BS.BlockArray[j].BP);
-		}			
+		}
 	}
 }
 
 void Scene::InitialiseScene()
 {
+	ScoreSystem* SS = GameLogicManager::GetInstance()->GetCurrentPlayer()->GetScoreSystem();
+	SS->RefreshScore();
 	// create start
 	Vector3 Pos[4];
 	Vector2 UV[4];
@@ -358,7 +369,7 @@ void Scene::InitialiseScene()
 	BS.RG = RenderGroup_Normal;
 	BS.Width = 40;
 	BS.Height = 856;
-	BS.SceneNodeCount = 10;
+	BS.SceneNodeCount = SS->GetNumBlockObjects(Block_Die);
 	BS.StartTexCoordX = BS.StartTexCoordY = 0;
 	BS.EndTexCoordX = 40;
 	BS.EndTexCoordY = 856;
@@ -386,7 +397,7 @@ void Scene::InitialiseScene()
 	// red apples
 	BS.Width = 730;
 	BS.Height = 260;
-	BS.SceneNodeCount = 10;
+	BS.SceneNodeCount = SS->GetNumBlockObjects(Block_Apple_Red);;
 	BS.StartTexCoordX = 136;
 	BS.StartTexCoordY = 84;
 	BS.EndTexCoordX = 136 + 66;
@@ -406,7 +417,7 @@ void Scene::InitialiseScene()
 	// yellow apples
 	BS.Width = 730;
 	BS.Height = 260;
-	BS.SceneNodeCount = 10;
+	BS.SceneNodeCount = SS->GetNumBlockObjects(Block_Apple_Yellow);;
 	BS.StartTexCoordX = 200;
 	BS.StartTexCoordY = 84;
 	BS.EndTexCoordX = 200 + 66;
@@ -426,7 +437,7 @@ void Scene::InitialiseScene()
 	// Carmine Circles
 	BS.Width = 730;
 	BS.Height = 260;
-	BS.SceneNodeCount = 10;
+	BS.SceneNodeCount = SS->GetNumBlockObjects(Block_Circle_Carmine);;
 	BS.StartTexCoordX = 370;
 	BS.StartTexCoordY = 28;
 	BS.EndTexCoordX = 370 + 116;
@@ -446,7 +457,7 @@ void Scene::InitialiseScene()
 	// Yellow Circles
 	BS.Width = 730;
 	BS.Height = 260;
-	BS.SceneNodeCount = 10;
+	BS.SceneNodeCount = SS->GetNumBlockObjects(Block_Circle_Yellow);;
 	BS.StartTexCoordX = 522;
 	BS.StartTexCoordY = 28;
 	BS.EndTexCoordX = 522 + 116;
@@ -478,6 +489,8 @@ void Scene::InitialiseScene()
 	BS.TexFullPath = mResourceManager->GetStarImagePath();
 	BuildRandomSceneNode(BS);
 
+	// Bullets
+	CreateBullets();
 	float PoemX = 0.3f;
 	// assume the poem in the center of the screen, and the poem is 4 column.
 	float StepX = PoemX * 2.0f / 4.0f;
@@ -491,17 +504,18 @@ void Scene::InitialiseScene()
 
 void Scene::CreateStartPoemEffect(int Index, bool IsFadeIn)
 {
+	Vector4 StartPoemColor = mTextManager->GetTextColorByType(StartPoemTextColor);
 	if (IsFadeIn)
 	{
 		// create start message
 		std::wstring StartMessage = mStartPoem[Index].PoemText;
-		Font* F = mFontManager->GetFont(YGYXingCao, 64, FSOutline | FSBold, 8, 4);
-		Text* T = mTextManager->CreateText(StartMessage, F, Vector4(0.8f, 0.5f, 0.3f, 1), false);
+		Font* F = mFontManager->GetStartPoemFont();
+		Text* T = mTextManager->CreateText(StartMessage, F, StartPoemColor, false);
 
 		SceneNode* TextNode1 = mRootSceneNode->CreateChild(mStartPoem[Index].NodeName, mStartPoem[Index].NodePosition, Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_TEXT);
 		TextNode1->AttachMesh(T->GetAttachMesh());
 		EffectTextFadeIn* E = (EffectTextFadeIn*)mEffectManager->CreateEffect(mStartPoem[Index].FadeInEffectName, Effect_Text_Fade_In_In_Order, 8.0f, false, true, 0.0f, T->GetAttachMesh(), TextNode1, nullptr, 0, this);
-		E->SetTextColor(Vector4(0.8f, 0.5f, 0.3f, 1));
+		E->SetTextColor(StartPoemColor);
 		E->SetTextCount(T->GetTextCount());
 		mStartPoem[Index].T = T;
 	}
@@ -511,8 +525,52 @@ void Scene::CreateStartPoemEffect(int Index, bool IsFadeIn)
 		{
 			SceneNode* S = mRootSceneNode->GetChildByName(mStartPoem[i].NodeName);
 			EffectTextFadeOut* E = (EffectTextFadeOut*)mEffectManager->CreateEffect(mStartPoem[i].FadeOutEffectName, Effect_Text_Fade_Out, 2.0f, false, true, 0.0f, mStartPoem[i].T->GetAttachMesh(), S, nullptr, ElementSceneNode, this);
-			E->SetTextColor(Vector4(0.8f, 0.5f, 0.3f, 1));
+			E->SetTextColor(StartPoemColor);
 		}
+	}
+}
+
+void Scene::CreateBullets()
+{
+	float BackGroundWidth = (GAME_TIME / SCREEN_PASS_TIME) * 2.0f;
+	ScoreSystem* SS = GameLogicManager::GetInstance()->GetCurrentPlayer()->GetScoreSystem();
+	int BulletCount = SS->GetNumBlockObjects(Block_Bullet_DecreaseLife);
+	for (int i = 0; i < BulletCount; i++)
+	{
+		Material* Mat = mMaterialManager->CreateMaterial(SimpleColor);
+		// Color
+		Vector4 Col = Vector4(RangeRandom(0.0f, 1.0f), RangeRandom(0.0f, 1.0f), RangeRandom(0.0f, 1.0f), 1.0f);
+		char* TempPtr = Mat->GetConstBufferPointer();
+		memcpy(TempPtr, &Col, sizeof(Vector4));
+		Mat->SetConstBufferLen(sizeof(Vector4));
+		float Radius = RangeRandom(0.01f, 0.02f);
+		Mesh* M = mMeshManager->CreateSphere(32, 32, Radius);
+		M->SetMaterial(Mat);
+		float CurrentDepth = RenderGroupManager::GetRenderGroupDepth(RenderGroup_Bullet);
+		SceneNode* SN = mRootSceneNode->CreateChild(Vector3(RangeRandom(0, BackGroundWidth), RangeRandom(-0.8f, 0.8f), CurrentDepth), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_Bullet);
+		SN->AttachMesh(M);
+		// Create Animation
+		NodeAnimation* Ani = static_cast<NodeAnimation*>(mAnimationManager->CreateAnimation(Animation_Node));
+		Ani->SetIsLoop(true);
+		Ani->SetIsAutoDestroy(false);
+		Ani->AttachNode(SN);
+		// Random Node Count
+		int NodeCount = (int)RangeRandom(2.0f, 7.0f);
+		ScoreSystem* SS = GameLogicManager::GetInstance()->GetCurrentPlayer()->GetScoreSystem();
+		float fSegTime = BULLET_ANI_SEG_TIME * (1.0f - BULLET_ANI_SEG_TIME_FADE * float(SS->GetBigGrade()));
+		for (int i = 0; i < NodeCount; i++)
+		{
+			Ani->AddPoint(Vector3(RangeRandom(0, BackGroundWidth), RangeRandom(-1.2f, 1.2f), CurrentDepth), Quaternion::IDENTITY, Vector3(1, 1, 1), fSegTime * float(i));
+		}
+		Ani->AddRoundPoint(fSegTime * float(NodeCount));
+
+		Vector3 Max = Vector3::ZERO, Min = Vector3::ZERO;
+
+		Min.x = -Radius;
+		Min.y = -Radius;
+		Max.x = Radius;
+		Max.y = Radius;
+		mCollisionManager->CreateCollision(Max, Min, false, SN, Block_Bullet_DecreaseLife);
 	}
 }
 
@@ -544,13 +602,14 @@ void Scene::CreateFrameRateText()
 {
 	// create start message
 	std::wstring StartMessage = L"Ö¡ÂÊ£º";
-	Font* F = mFontManager->GetFont(MFMengYuan, 16, FSOutline, 2);
-	mFrameRateTextTitle = mTextManager->CreateText(StartMessage, F, Vector4(1, 0, 0, 1));
+	Font* F = mFontManager->GetCommonFont();
+	Vector4 CommomColor = mTextManager->GetTextColorByType(CommonTextColor);
+	mFrameRateTextTitle = mTextManager->CreateText(StartMessage, F, CommomColor);
 
-	mFrameRateTextTitleNode = mRootSceneNode->CreateChild("FrameRate_Title_Node", Vector3(-0.74f, 0.75f, RenderGroupManager::GetRenderGroupDepth(RenderGroup_TEXT)), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_TEXT);
+	mFrameRateTextTitleNode = mNodeFollowCamera->CreateChild("FrameRate_Title_Node", Vector3(-0.74f, 0.75f, RenderGroupManager::GetRenderGroupDepth(RenderGroup_TEXT)), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_TEXT);
 	mFrameRateTextTitleNode->AttachMesh(mFrameRateTextTitle->GetAttachMesh());
 
-	mFrameRateTextNode = mRootSceneNode->CreateChild("FrameRate_Node", Vector3(-0.68f, 0.75f, RenderGroupManager::GetRenderGroupDepth(RenderGroup_TEXT)), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_TEXT);
+	mFrameRateTextNode = mNodeFollowCamera->CreateChild("FrameRate_Node", Vector3(-0.68f, 0.75f, RenderGroupManager::GetRenderGroupDepth(RenderGroup_TEXT)), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_TEXT);
 }
 
 void Scene::SwitchToNextBackGround()
@@ -612,11 +671,6 @@ int Scene::GetWindowHeight() const
 	return mWindowHeight;
 }
 
-void Scene::RefreshScore(int CurrentScore)
-{
-
-}
-
 void Scene::OnInitialise(Effect* E)
 {
 	// do nothing
@@ -653,7 +707,7 @@ void Scene::OnDestroy(Effect* E)
 	}
 }
 
-void Scene::OnTimer(unsigned int EventID)
+void Scene::OnTimer(unsigned int EventID, void* UserData)
 {
 	if (EventID == 0)
 	{

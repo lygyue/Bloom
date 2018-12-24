@@ -15,6 +15,8 @@
 #include "EffectManager.h"
 #include "Log.h"
 
+GameLogicManager* GameLogicManager::ThisInstance = nullptr;
+
 GameLogicManager::GameLogicManager()
 {
 	Scene* S = new Scene;
@@ -37,14 +39,29 @@ GameLogicManager::~GameLogicManager()
 
 bool GameLogicManager::Initialise(HWND hWnd)
 {
+	InitialiseAllResource();
 	Scene* S = Scene::GetCurrentScene();
 	bool ret = S->Initialise(hWnd);
 	if (!ret)
 	{
 		return false;
 	}
-	InitialiseAllResource();
+
 	return true;
+}
+
+GameLogicManager* GameLogicManager::GetInstance()
+{
+	if (ThisInstance == nullptr)
+	{
+		ThisInstance = new GameLogicManager;
+	}
+	return ThisInstance;
+}
+
+void GameLogicManager::ReleaseInstance()
+{
+	SAFE_DELETE(ThisInstance);
 }
 
 void GameLogicManager::StartNewGame()
@@ -77,7 +94,7 @@ void GameLogicManager::Update()
 
 void GameLogicManager::InitialiseAllResource()
 {
-
+	mPlayer->Initialise();
 }
 
 Player* GameLogicManager::GetCurrentPlayer() const

@@ -25,6 +25,8 @@ public:
 	void Update();
 
 	Player* GetCurrentPlayer() const;
+	static GameLogicManager* GetInstance();
+	static void ReleaseInstance();
 public:
 	void OnKeyDown(unsigned char Key);
 	void OnKeyUp(unsigned char Key);
@@ -39,6 +41,6 @@ protected:
 
 	void InitialiseAllResource();
 private:
-
 	Player* mPlayer;
+	static GameLogicManager* ThisInstance;
 };

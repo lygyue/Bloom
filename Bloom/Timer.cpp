@@ -55,7 +55,7 @@ bool Timer::Update()
 		if (mTimerEventList[i].RemainTime >= mTimerEventList[i].Delta)
 		{
 			// 函数回调
-			mTimerEventList[i].Listener->OnTimer(mTimerEventList[i].EventID);
+			mTimerEventList[i].Listener->OnTimer(mTimerEventList[i].EventID, mTimerEventList[i].UserData);
 			// 需要重置时间。这个重置用求模重置，如果定时器设置过快，会丢弃一些回调。
 			// 举例：Timer定时器时间设置为1，你大概率无法保证每秒回调1000次。
 			mTimerEventList[i].RemainTime %= mTimerEventList[i].Delta;
@@ -66,7 +66,7 @@ bool Timer::Update()
 		mTimerEventOnceList[i].RemainTime += mDelta;
 		if (mTimerEventOnceList[i].RemainTime >= mTimerEventOnceList[i].Delta)
 		{
-			mTimerEventOnceList[i].Listener->OnTimer(mTimerEventOnceList[i].EventID);
+			mTimerEventOnceList[i].Listener->OnTimer(mTimerEventOnceList[i].EventID, mTimerEventOnceList[i].UserData);
 			mTimerEventOnceList.erase(mTimerEventOnceList.begin() + i);
 		}
 	}
@@ -98,7 +98,7 @@ BOOL Timer::GetPauseTimer() const
 	return mPauseTimer;
 }
 //-------------------------------------------------------------------------
-void Timer::AddTimer(ITimerListener* Listener, unsigned int EventID, unsigned int Delta)
+void Timer::AddTimer(ITimerListener* Listener, unsigned int EventID, unsigned int Delta, void* UserData/* = nullptr*/)
 {
 	// 不做任何错误检测，全靠外部调用注意。这东西做错误检查也没什么用，按道理外面调用不该出错。
 	TimerObject obj;
@@ -106,6 +106,7 @@ void Timer::AddTimer(ITimerListener* Listener, unsigned int EventID, unsigned in
 	obj.EventID = EventID;
 	obj.Delta = Delta;
 	obj.RemainTime = 0;
+	obj.UserData = UserData;
 	mTimerEventList.push_back(obj);
 }
 //-------------------------------------------------------------------------
@@ -123,13 +124,14 @@ void Timer::RemoveTimer(ITimerListener* Listener, unsigned int EventID)
 	return;
 }
 //-------------------------------------------------------------------------
-void Timer::AddOnceTimer(ITimerListener* Listener, unsigned int EventID, unsigned int Delta)
+void Timer::AddOnceTimer(ITimerListener* Listener, unsigned int EventID, unsigned int Delta, void* UserData/* = nullptr*/)
 {
 	TimerObject obj;
 	obj.Listener = Listener;
 	obj.EventID = EventID;
 	obj.Delta = Delta;
 	obj.RemainTime = 0;
+	obj.UserData = UserData;
 	mTimerEventOnceList.push_back(obj);
 }
 //-------------------------------------------------------------------------

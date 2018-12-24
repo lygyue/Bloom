@@ -19,6 +19,7 @@ Collision::Collision()
 {
 	mBlockProperty = Block_None;
 	mIsStatic = true;
+	mIsVisible = true;
 	mAttachSceneNode = nullptr;
 	mMax = mMin = mMaxLocalTrasform = mMinLocalTransform = Vector3::ZERO;
 }
@@ -71,6 +72,16 @@ void Collision::SetMin(Vector3& Min)
 Vector3 Collision::GetMin() const
 {
 	return mMin;
+}
+
+void Collision::SetVisible(bool Visible)
+{
+	mIsVisible = Visible;
+}
+
+bool Collision::GetVisible() const
+{
+	return mIsVisible;
 }
 
 bool Collision::GetIsStatic() const
@@ -200,7 +211,7 @@ std::vector<Collision*> CollisionManager::CalculateCollisionList(Collision* C)
 	std::vector<Collision*> V;
 	for (size_t i = 0; i < mStaticCollisionArray.size(); i++)
 	{
-		if (mStaticCollisionArray[i]->CollisionTo(*C))
+		if (mStaticCollisionArray[i]->GetVisible() && mStaticCollisionArray[i]->CollisionTo(*C))
 		{
 			V.push_back(mStaticCollisionArray[i]);
 		}
@@ -210,7 +221,7 @@ std::vector<Collision*> CollisionManager::CalculateCollisionList(Collision* C)
 	{
 		if (mDynamicCollisionArray[i] != C)
 		{
-			if (mDynamicCollisionArray[i]->CollisionTo(*C))
+			if (mDynamicCollisionArray[i]->GetVisible() && mDynamicCollisionArray[i]->CollisionTo(*C))
 			{
 				V.push_back(mDynamicCollisionArray[i]);
 			}

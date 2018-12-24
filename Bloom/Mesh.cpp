@@ -129,20 +129,12 @@ void Mesh::RenderMesh(XMMATRIX& WorldTransform) const
 //-----------------------------------------------------------------------
 MeshManager::MeshManager()
 {
-	mCurrentMeshIndex = 0;
+
 }
 
 MeshManager::~MeshManager()
 {
 	DestroyAllMesh();
-}
-
-std::string MeshManager::GetAutoName()
-{
-	char szTemp[128];
-	memset(szTemp, 0, 128);
-	sprintf_s(szTemp, 128, "%s%d", "Mesh_Auto_Generate_Name_", mCurrentMeshIndex++);
-	return szTemp;
 }
 
 Mesh* MeshManager::CreateMesh(void* VertexBuffer, int VertexElementSize, int VertexCount, void* IndexBuffer, int IndexCount)
@@ -247,7 +239,57 @@ Mesh* MeshManager::CreateSphere(int Col, int Row, float Radius)
 
 Mesh* MeshManager::CreateSphere(std::string Name, int Col, int Row, float Radius)
 {
-	return nullptr;
+
+	if (mMeshArray.find(Name) != mMeshArray.end())
+	{
+		return mMeshArray[Name];
+	}
+	struct VertexStruct
+	{
+		Vector3 Position;
+		Vector2 TexCoord;
+	};
+	int VertexCount = (Col + 1) * (Row + 1);
+	VertexStruct* VS = new VertexStruct[VertexCount];
+	int IndexCount = Col * Row * 2 * 3;
+	short* IB = new short[IndexCount];
+	float RowRadian = DegreesToRadians(180) / float(Row);
+	float ColRadian = DegreesToRadians(360) / float(Col);
+	int VertexIndex = 0;
+	for (int i = 0; i < Row + 1; i++)
+	{
+		float Y = Radius * cos(float(i) * RowRadian);
+		float R = Radius * sin(float(i) * RowRadian);
+		float V = float(i) / float(Row);
+		for (int j = 0; j < Col + 1; j++)
+		{
+			float X = R * cos(float(j) * ColRadian);
+			float Z = R * sin(float(j) * ColRadian);
+			VS[VertexIndex].Position = Vector3(X, Y, Z);
+			VS[VertexIndex++].TexCoord = Vector2(float(j) / float(Col), V);
+		}
+	}
+	int Index = 0;
+	for (int i = 0; i < Row; i++)
+	{
+		for (int j = 0; j < Col; j++)
+		{
+			// two triangles
+			// 1
+			int Pos = i * Col + j;
+			IB[Index++] = Pos;
+			IB[Index++] = Pos + 1;
+			IB[Index++] = Pos + Col;
+			// 2
+			IB[Index++] = Pos + 1;
+			IB[Index++] = Pos + 1 + Col;
+			IB[Index++] = Pos + Col;
+		}
+	}
+	Mesh* M = new Mesh(Name);
+	M->Initialise(VS, sizeof(VertexStruct), VertexCount, IB, IndexCount);
+	mMeshArray[Name] = M;
+	return M;
 }
 
 Mesh* MeshManager::CreateBox(const Vector3& V)

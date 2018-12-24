@@ -52,6 +52,12 @@ protected:
 	std::wstring mName;
 };
 
+enum TextColorType
+{
+	StartPoemTextColor,
+	CommonTextColor,
+	TextColorMax,
+};
 class TextManager
 {
 	friend class Scene;
@@ -59,6 +65,8 @@ public:
 	Text* CreateText(std::wstring Title, Font* FT, Vector4 Col, bool Horizontal = true, Text::OriginalMode OM = Text::Original_Center);
 	bool DestroyText(std::wstring Title);
 	bool DestroyText(Text* T);
+
+	Vector4 GetTextColorByType(TextColorType TCT) const;
 protected:
 	TextManager();
 	~TextManager();

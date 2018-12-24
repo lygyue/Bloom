@@ -16,7 +16,7 @@
 
 struct ITimerListener
 {
-	virtual void OnTimer(unsigned int EventID) = 0;
+	virtual void OnTimer(unsigned int EventID, void* UserData) = 0;
 };
 
 struct TimerObject
@@ -25,6 +25,7 @@ struct TimerObject
 	unsigned int EventID;
 	unsigned int Delta;
 	unsigned int RemainTime;
+	void* UserData;
 	TimerObject()
 	{
 		memset(this, 0, sizeof(TimerObject));
@@ -52,10 +53,10 @@ public:
 	unsigned long getMilliseconds();
 	/** Returns microseconds since initialisation or last reset */
 	unsigned long getMicroseconds();
-	void AddTimer(ITimerListener* Listener, unsigned int EventID, unsigned int Delta);
+	void AddTimer(ITimerListener* Listener, unsigned int EventID, unsigned int Delta, void* UserData = nullptr);
 	void RemoveTimer(ITimerListener* Listener, unsigned int EventID);
 	// Add a once callback timer, which been auto remove.
-	void AddOnceTimer(ITimerListener* Listener, unsigned int EventID, unsigned int Delta);
+	void AddOnceTimer(ITimerListener* Listener, unsigned int EventID, unsigned int Delta, void* UserData = nullptr);
 private:
 	bool setOption(const std::string& strKey, const void* pValue);
 	/** Resets timer */

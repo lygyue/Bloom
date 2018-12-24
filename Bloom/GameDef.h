@@ -25,6 +25,21 @@
 
 #define VERTICAL_SYNCHRONIZATION	1
 
+// a bullet can collision the bloom and decrease the life, 3 seconds can trigger once.
+#define  BULLET_COLLISION_TIME		3000
+#define  BULLET_ANI_SEG_TIME		3.0f
+#define	 BULLET_ANI_SEG_TIME_FADE	0.1f
+
+#define			GET_AUTO_NAME(Name)				\
+std::string GetAutoName()						\
+{												\
+		static int CurrentIndex = 0;			\
+		char szTemp[128];						\
+		memset(szTemp, 0, 128);					\
+		sprintf_s(szTemp, 128, "%s_Auto_Generate_Name_%d", Name, CurrentIndex++);		\
+		return szTemp;							\
+}
+
 enum ElementType
 {
 	ElementShader			= 1 << 0,

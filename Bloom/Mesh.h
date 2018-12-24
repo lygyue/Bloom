@@ -10,6 +10,7 @@
 #include "Math/Vector3.h"
 #include "Math/Matrix4.h"
 #include "Common.h"
+#include "GameDef.h"
 #include "Material.h"
 #include <map>
 class MeshManager;
@@ -69,8 +70,8 @@ protected:
 	~MeshManager();
 
 	void DestroyAllMesh();
-	std::string GetAutoName();
 private:
 	std::map<std::string, Mesh*> mMeshArray;
-	int mCurrentMeshIndex;
+
+	GET_AUTO_NAME("Mesh")
 };

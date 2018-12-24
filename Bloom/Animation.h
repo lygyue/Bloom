@@ -10,6 +10,7 @@
  **********************************************/
 #pragma once
 #include "Common.h"
+#include "GameDef.h"
 #include <map>
 #include <vector>
 
@@ -44,10 +45,10 @@ public:
 	void SetPause(bool IsPause);
 	bool GetIsPause() const;
 
-	bool GetIsEnd() const;
+	bool IsEnd() const;
 
 	void SetIsAutoDestroy(bool IsAutoDestroy);
-	bool GetIsAutoDestroy() const;
+	bool IsAutoDestroy() const;
 
 protected:
 	Animation(std::string Name);
@@ -68,7 +69,9 @@ class NodeAnimation : public Animation
 	friend class AnimationManager;
 public:
 	void AddPoint(Vector3 Pos, Quaternion Rotate, Vector3 Scale, float fTime);
+	void GetPoint(Vector3& Pos, Quaternion& Rotate, Vector3& Scale, float& fTime, int Index) const;
 	void AttachNode(SceneNode* Node);
+	void AddRoundPoint(float fTime);
 
 	virtual void Update() override;
 protected:
@@ -89,8 +92,8 @@ class AnimationManager
 public:
 	void Update();
 	Animation* CreateAnimation(std::string Name, AnimationType AT);
+	Animation* CreateAnimation(AnimationType AT);
 	bool DestroyAnimation(Animation* Ani);
-	void DestroyAnimationNextFrame(Animation* Ani);
 
 protected:
 	AnimationManager();
@@ -98,5 +101,5 @@ protected:
 
 private:
 	std::map<std::string, Animation*> mAnimationMap;
-	std::vector<Animation*> mDelayDestroyArray;
+	GET_AUTO_NAME("Animation")
 };
