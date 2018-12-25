@@ -49,6 +49,11 @@ std::string Animation::GetName() const
 	return mName;
 }
 
+void Animation::SetAnimationLength(float AniLength)
+{
+	mAnimationLength = AniLength;
+}
+
 float Animation::GetAnimationLength() const
 {
 	return mAnimationLength;
@@ -139,6 +144,11 @@ void NodeAnimation::AttachNode(SceneNode* Node)
 	mAttachNode = Node;
 }
 
+SceneNode* NodeAnimation::GetAttachNode() const
+{
+	return mAttachNode;
+}
+
 void NodeAnimation::Update()
 {
 	if (mIsPause) return;
@@ -186,6 +196,64 @@ void NodeAnimation::Update()
 	mAttachNode->SetRotation(Rot);
 	mAttachNode->SetScale(Scale);
 }
+//-----------------------------------------------------------------------
+FlowingTextAnimation::FlowingTextAnimation(std::string Name)
+	: Animation(Name)
+{
+	mAttachNode = nullptr;
+	mAcceleration = 1.0f;
+	mStartPosition = Vector3::ZERO;
+}
+
+FlowingTextAnimation::~FlowingTextAnimation()
+{
+
+}
+
+void FlowingTextAnimation::AttachNode(SceneNode* Node)
+{
+	mAttachNode = Node;
+	mStartPosition = Node->GetWorldPosition();
+}
+
+SceneNode* FlowingTextAnimation::GetAttachNode() const
+{
+	return mAttachNode;
+}
+
+void FlowingTextAnimation::SetAcceleration(float Acceleration)
+{
+	mAcceleration = Acceleration;
+}
+
+float FlowingTextAnimation::GetAcceleration() const
+{
+	return mAcceleration;
+}
+
+void FlowingTextAnimation::Update()
+{
+	if (mIsPause) return;
+	if (mAttachNode == nullptr) return;
+	mCurrentTime += Timer::GetInstance()->GetDeltaFloat();
+	if (mCurrentTime >= mAnimationLength)
+	{
+		if (mIsLoop)
+		{
+			mCurrentTime -= mAnimationLength;
+		}
+		else
+		{
+			mIsEnd = true;
+			mCurrentTime = mAnimationLength;
+		}
+	}
+	// Formula: s = 0.5 * a * t^2
+	float YOffset = mCurrentTime * mCurrentTime * mAcceleration * 0.5f;
+	Vector3 Pos = mStartPosition + Vector3(0, YOffset, 0);
+
+	mAttachNode->SetPosition(Pos);
+}
 
 //-----------------------------------------------------------------------
 
@@ -216,6 +284,9 @@ Animation* AnimationManager::CreateAnimation(std::string Name, AnimationType AT)
 	{
 	case Animation_Node:
 		Ani = new NodeAnimation(Name);
+		break;
+	case Animation_FlowingText:
+		Ani = new FlowingTextAnimation(Name);
 		break;
 	case Animation_UV:
 		break;

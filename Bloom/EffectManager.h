@@ -53,10 +53,10 @@ public:
 	class EffectListener
 	{
 	public:
-		virtual void OnInitialise(Effect* E) = 0;
-		virtual void OnEnd(Effect* E) = 0;
+		virtual void OnInitialise(Effect* E) {}
+		virtual void OnEnd(Effect* E) {}
 		// This function been called in destructor, so the most method is useless.
-		virtual void OnDestroy(Effect* E) = 0;
+		virtual void OnDestroy(Effect* E) {}
 	};
 public:
 	std::string GetName() const;

@@ -11,11 +11,15 @@
 #pragma once
 #include "Common.h"
 #include "Timer.h"
+#include "Math/Vector3.h"
+#include "EffectManager.h"
+#include <vector>
 
 class SceneNode;
 class Collision;
 class ScoreSystem;
-class Player : public ITimerListener
+class Text;
+class Player : public ITimerListener ,public Effect::EffectListener
 {
 	friend class GameLogicManager;
 	friend class Scene;
@@ -51,6 +55,9 @@ public:
 	void OnRButtonDbclk(int x, int y, unsigned int wParam);
 
 public:
+	// override from Effect::EffectListener
+	virtual void OnDestroy(Effect* E) override;
+
 	virtual void OnTimer(unsigned int EventID, void* UserData) override;
 protected:
 	ScoreSystem* GetScoreSystem() const;
@@ -59,11 +66,17 @@ protected:
 	~Player();
 
 	void Initialise();
+	void CreateFlowingText(Vector3 Pos, int PlayerScore);
+	void RefreshSpeed(int PlayerScore);
 
 	SceneNode* mPlayerSceneNode;
 	Collision* mPlayerCollision;
 	ScoreSystem* mPlayerScore;
+	std::vector<Text*> mFlowingTextArray;
+	std::vector<SceneNode*> mFlowingNodeArray;
 	std::string mName;
 	float mSpeed;
+	float mDefaultSpeed;
+	float mMaxSpeed;
 	unsigned int mMoveDirection;
 };

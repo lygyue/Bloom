@@ -29,6 +29,8 @@
 #define  BULLET_COLLISION_TIME		3000
 #define  BULLET_ANI_SEG_TIME		3.0f
 #define	 BULLET_ANI_SEG_TIME_FADE	0.1f
+// Flowing text time
+#define  FLOWING_TEXT_TIME			2.0f
 
 #define			GET_AUTO_NAME(Name)				\
 std::string GetAutoName()						\

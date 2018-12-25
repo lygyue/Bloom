@@ -56,6 +56,7 @@ enum TextColorType
 {
 	StartPoemTextColor,
 	CommonTextColor,
+	FlowingTextColor,
 	TextColorMax,
 };
 class TextManager

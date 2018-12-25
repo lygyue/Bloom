@@ -13,14 +13,15 @@
 #include "GameDef.h"
 #include <map>
 #include <vector>
+#include "Math/Vector3.h"
 
 class SceneNode;
 class SimpleSpline;
-class Vector3;
 class Quaternion;
 enum AnimationType
 {
 	Animation_Node,
+	Animation_FlowingText,
 	Animation_UV,
 	Animation_Texture,
 	Animation_Skeleton,
@@ -37,6 +38,7 @@ public:
 	AnimationType GetAnimationType() const;
 
 	std::string GetName() const;
+	void SetAnimationLength(float AniLength);
 	float GetAnimationLength() const;
 
 	void SetIsLoop(bool IsLoop);
@@ -71,6 +73,7 @@ public:
 	void AddPoint(Vector3 Pos, Quaternion Rotate, Vector3 Scale, float fTime);
 	void GetPoint(Vector3& Pos, Quaternion& Rotate, Vector3& Scale, float& fTime, int Index) const;
 	void AttachNode(SceneNode* Node);
+	SceneNode* GetAttachNode() const;
 	void AddRoundPoint(float fTime);
 
 	virtual void Update() override;
@@ -85,6 +88,24 @@ protected:
 	SimpleSpline* mSpline;
 };
 
+class FlowingTextAnimation : public Animation
+{
+	friend class AnimationManager;
+public:
+	void AttachNode(SceneNode* Node);
+	SceneNode* GetAttachNode() const;
+	void SetAcceleration(float Acceleration);
+	float GetAcceleration() const;
+	virtual void Update() override;
+
+protected:
+	FlowingTextAnimation(std::string Name);
+	virtual ~FlowingTextAnimation();
+
+	SceneNode* mAttachNode;
+	float mAcceleration;
+	Vector3 mStartPosition;
+};
 
 class AnimationManager
 {
