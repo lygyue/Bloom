@@ -73,5 +73,6 @@ protected:
 private:
 	std::map<std::string, Mesh*> mMeshArray;
 
-	GET_AUTO_NAME("Mesh")
+	GET_AUTO_NAME("Mesh");
+	CLEAR_MAP(mMeshArray);
 };

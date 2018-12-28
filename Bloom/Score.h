@@ -40,8 +40,8 @@ protected:
 	int GetNumBlockObjects(BlockPro BP) const;
 	float GetBulletSpeed() const;
 protected:
+	void Reset();
 	void RefreshScore();
-
 	void CalculateTotalScore();
 	bool IsWin() const;
 	// u win all, return false, otherwise return true.

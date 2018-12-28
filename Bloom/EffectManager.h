@@ -340,5 +340,6 @@ protected:
 	void Update();
 private:
 	std::map<std::string, Effect*> mEffectArray;
-	GET_AUTO_NAME("Effect")
+	GET_AUTO_NAME("Effect");
+	CLEAR_MAP(mEffectArray);
 };

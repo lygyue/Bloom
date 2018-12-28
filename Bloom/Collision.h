@@ -11,6 +11,7 @@
 #pragma once
 #include "Math/Vector3.h"
 #include "Common.h"
+#include "GameDef.h"
 #include <vector>
 
 class SceneNode;
@@ -95,4 +96,5 @@ private:
 	std::vector<Collision*> mDynamicCollisionArray;
 
 	unsigned long mCurrentFrameIndex;
+	CLEAR_VECTOR2(mStaticCollisionArray, mDynamicCollisionArray);
 };

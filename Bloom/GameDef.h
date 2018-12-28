@@ -7,6 +7,7 @@
  * 
  */
 #pragma once
+#include "Common.h"
 
 #define WINDOW_WIDTH		1600
 #define WINDOW_HEIGHT		1024
@@ -32,15 +33,54 @@
 // Flowing text time
 #define  FLOWING_TEXT_TIME			2.0f
 
-#define			GET_AUTO_NAME(Name)				\
-std::string GetAutoName()						\
-{												\
-		static int CurrentIndex = 0;			\
-		char szTemp[128];						\
-		memset(szTemp, 0, 128);					\
-		sprintf_s(szTemp, 128, "%s_Auto_Generate_Name_%d", Name, CurrentIndex++);		\
-		return szTemp;							\
+#define			GET_AUTO_NAME(Name)															\
+std::string GetAutoName()																	\
+{																							\
+		static int CurrentIndex = 0;														\
+		char szTemp[128];																	\
+		memset(szTemp, 0, 128);																\
+		sprintf_s(szTemp, 128, "%s_Auto_Generate_Name_%d", Name, CurrentIndex++);			\
+		return szTemp;																		\
 }
+
+#define			CLEAR_MAP(Container)														\
+protected:																					\
+void Clear()																				\
+{																							\
+	for (auto It = Container.begin(); It != Container.end(); It++)							\
+	{																						\
+		SAFE_DELETE(It->second);															\
+	}																						\
+	Container.clear();																		\
+}
+
+#define			CLEAR_VECTOR(Container)														\
+protected:																					\
+void Clear()																				\
+{																							\
+	for (auto It = Container.begin(); It != Container.end(); It++)							\
+	{																						\
+		SAFE_DELETE(*It);																	\
+	}																						\
+	Container.clear();																		\
+}
+
+#define			CLEAR_VECTOR2(Container1, Container2)										\
+protected:																					\
+void Clear()																				\
+{																							\
+	for (auto It = Container1.begin(); It != Container1.end(); It++)						\
+	{																						\
+		SAFE_DELETE(*It);																	\
+	}																						\
+	Container1.clear();																		\
+	for (auto It = Container2.begin(); It != Container2.end(); It++)						\
+	{																						\
+		SAFE_DELETE(*It);																	\
+	}																						\
+	Container2.clear();																		\
+}
+
 
 enum ElementType
 {

@@ -24,6 +24,8 @@ public:
 	void StartNewGame();
 	void Update();
 
+	void StartNewGame(bool Upgrade);
+
 	Player* GetCurrentPlayer() const;
 	static GameLogicManager* GetInstance();
 	static void ReleaseInstance();

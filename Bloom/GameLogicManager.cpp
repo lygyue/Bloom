@@ -73,6 +73,20 @@ void GameLogicManager::StartNewGame()
 	}
 }
 
+void GameLogicManager::StartNewGame(bool Upgrade)
+{
+	Scene::GetCurrentScene()->ClearScene();
+	Scene::GetCurrentScene()->CreateSceneContent();
+	if (Upgrade)
+	{
+
+	}
+	else
+	{
+
+	}
+}
+
 void GameLogicManager::Update()
 {
 	Timer::ThisInstance->Update();

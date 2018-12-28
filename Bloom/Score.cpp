@@ -70,6 +70,15 @@ void ScoreSystem::CollisionTo(BlockPro BP)
 	RefreshScore();
 }
 
+void ScoreSystem::Reset()
+{
+	mCurrentScore = 0;
+	mWinScore = 0;
+	mScoreNode = nullptr;
+	mScoreText = nullptr;
+	RefreshScore();
+}
+
 void ScoreSystem::RefreshScore()
 {
 	TextManager* TextMgr = Scene::GetCurrentScene()->GetTextManager();

@@ -59,7 +59,6 @@ public:
 	Material* CreateMaterial(std::string Name, BaseShader BS);
 	Material* CreateMaterial(BaseShader BS);
 	Material* GetMaterialByName(std::string Name);
-	Material* GetMaterialByShaderType(BaseShader BS);
 	void DestroyMaterial(std::string Name);
 	void DestroyMaterial(Material* Mat);
 protected:
@@ -71,5 +70,6 @@ private:
 	std::map<std::string, Material*> mMaterialArray;
 	ShaderManager* mShaderManager;
 
-	GET_AUTO_NAME("Material")
+	GET_AUTO_NAME("Material");
+	CLEAR_MAP(mMaterialArray);
 };

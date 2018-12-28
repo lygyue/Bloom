@@ -14,6 +14,7 @@
 #include <vector>
 #include "Math/Vector2.h"
 #include "Math/Vector3.h"
+#include "GameDef.h"
 
 struct TextInfo;
 class Font;
@@ -73,4 +74,5 @@ protected:
 	~TextManager();
 
 	std::map<std::wstring, Text*> mTextMap;
+	CLEAR_MAP(mTextMap);
 };

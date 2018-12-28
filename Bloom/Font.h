@@ -16,6 +16,7 @@
 #include FT_STROKER_H
 
 #include "Math/Vector2.h"
+#include "GameDef.h"
 
 enum FontType
 {
@@ -121,4 +122,5 @@ protected:
 	~FontManager();
 	FT_Library mFTLibrary;
 	std::vector<Font*> mFontArray;
+	CLEAR_VECTOR(mFontArray);
 };

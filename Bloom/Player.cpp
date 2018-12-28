@@ -20,6 +20,7 @@
 #include "Font.h"
 #include "Text.h"
 #include "Animation.h"
+#include "GameLogicManager.h"
 
 Player::Player(std::string Name)
 {
@@ -196,10 +197,25 @@ void Player::Update()
 			}
 			case Block_Die:
 			{
+				GameLogicManager::GetInstance()->StartNewGame(false);
+				mPlayerScore->Reset();
 				break;
 			}
 			case Block_Final_Flag:
 			{
+				if (mPlayerScore->IsWin())
+				{
+					if (!mPlayerScore->AddGrade())
+					{
+						// go into the ending.
+					}
+					GameLogicManager::GetInstance()->StartNewGame(true);
+				}
+				else
+				{
+					GameLogicManager::GetInstance()->StartNewGame(false);
+				}
+				mPlayerScore->Reset();
 				break;
 			}
 			default:

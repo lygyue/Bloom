@@ -68,3 +68,12 @@ void RenderGroupManager::RenderAllQueue() const
 		}
 	}
 }
+
+void RenderGroupManager::Clear()
+{
+	for (size_t i = 0; i < RenderGroup_Max; i++)
+	{
+		RenderQueue RQ = mRenderGroups[i];
+		RQ.clear();
+	}
+}

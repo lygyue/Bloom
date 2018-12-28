@@ -11,7 +11,6 @@
 #include "Scene.h"
 #include "RenderSystem.h"
 
-std::string StandardMaterialName[CutomShader] = { "Simple_Black", "Simple_White", "Simple_Red", "Simple_Green", "Simple_Blue", "Simple_Texture_Sample" };
 Material::Material(std::string Name)
 {
 	memset(mConstBuffer, 0, sizeof(mConstBuffer));
@@ -166,13 +165,6 @@ MaterialManager::~MaterialManager()
 void MaterialManager::Initialise()
 {
 	mShaderManager->InitialiseStandardShaders();
-	for (int i = 0; i < CutomShader; i++)
-	{
-		std::string Name = StandardMaterialName[i];
-		Material* Mat = new Material(Name);
-		Mat->SetShader(mShaderManager->GetShaderByType(BaseShader(i)));
-		mMaterialArray[StandardMaterialName[i]] = Mat;
-	}
 }
 
 ShaderManager* MaterialManager::GetShaderManager() const
@@ -207,12 +199,6 @@ Material* MaterialManager::GetMaterialByName(std::string Name)
 		return nullptr;
 	}
 	return mMaterialArray[Name];
-}
-
-Material* MaterialManager::GetMaterialByShaderType(BaseShader BS)
-{
-	std::string Name = StandardMaterialName[BS];
-	return GetMaterialByName(Name);
 }
 
 void MaterialManager::DestroyMaterial(std::string Name)

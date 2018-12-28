@@ -122,5 +122,6 @@ protected:
 
 private:
 	std::map<std::string, Animation*> mAnimationMap;
-	GET_AUTO_NAME("Animation")
+	GET_AUTO_NAME("Animation");
+	CLEAR_MAP(mAnimationMap);
 };

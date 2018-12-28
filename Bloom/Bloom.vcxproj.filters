@@ -2,11 +2,8 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="Bloom.cpp" />
-    <ClCompile Include="Functional.cpp" />
-    <ClCompile Include="Log.cpp" />
     <ClCompile Include="GameLogicManager.cpp" />
     <ClCompile Include="stdafx.cpp" />
-    <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Math\Matrix3.cpp">
       <Filter>Math</Filter>
     </ClCompile>
@@ -74,19 +71,24 @@
     <ClCompile Include="Text.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
+    <ClCompile Include="Score.cpp" />
+    <ClCompile Include="Log.cpp">
+      <Filter>BaseSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Functional.cpp">
+      <Filter>BaseSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Timer.cpp">
+      <Filter>BaseSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Bloom.h" />
-    <ClInclude Include="Common.h" />
-    <ClInclude Include="Functional.h" />
-    <ClInclude Include="Log.h" />
-    <ClInclude Include="GameDef.h" />
     <ClInclude Include="GameLogicManager.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Robot.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="Timer.h" />
     <ClInclude Include="Math\Matrix3.h">
       <Filter>Math</Filter>
     </ClInclude>
@@ -157,6 +159,22 @@
     <ClInclude Include="Text.h">
       <Filter>Scene</Filter>
     </ClInclude>
+    <ClInclude Include="Score.h" />
+    <ClInclude Include="Common.h">
+      <Filter>BaseSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Log.h">
+      <Filter>BaseSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Functional.h">
+      <Filter>BaseSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="GameDef.h">
+      <Filter>BaseSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>BaseSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Bloom.rc" />
@@ -174,6 +192,12 @@
     </Filter>
     <Filter Include="Scene">
       <UniqueIdentifier>{21073932-3c1e-419a-8e00-09f0ba01e8bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{43c8dea2-0e3a-419a-ad0c-a66401d25b9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BaseSystem">
+      <UniqueIdentifier>{31c41ce9-9f52-4797-b3b9-4ad4258093f5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

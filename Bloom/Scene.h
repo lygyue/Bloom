@@ -213,6 +213,8 @@ protected:
 	void SwitchToNextBackGround();
 	void CreateStartPoemEffect(int Index, bool IsFadeIn);
 	void CreateBullets();
+	void CreateSceneContent();
+	void ClearScene();
 private:
 	SceneNode* mRootSceneNode;
 	SceneNode* mBackGroundNode;

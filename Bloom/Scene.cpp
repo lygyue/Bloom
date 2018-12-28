@@ -108,12 +108,33 @@ bool Scene::Initialise(HWND hWnd)
 		return false;
 	}
 	mMaterialManager->Initialise();
+	CreateSceneContent();
+	return true;
+}
+
+void Scene::CreateSceneContent()
+{
 	mBackGroundNode = mRootSceneNode->CreateChild("BackGround_Node", Vector3(0, 0, RenderGroupManager::GetRenderGroupDepth(RenderGroup_BackGroud)), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_BackGroud);
 	mNodeFollowCamera = mRootSceneNode->CreateChild("Follow_Camera__Node", Vector3(0, 0, 0), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_TEXT);
 	CreateBackGround();
 	CreateFrameRateText();
 	InitialiseScene();
-	return true;
+	return;
+}
+
+void Scene::ClearScene()
+{
+	mRootSceneNode->DestroyAllChild();
+	mRenderGroupManager->Clear();
+	mEffectManager->Clear();
+	mCamera->SetPosition(XMVectorSet(0, 0, 0, 0));
+	mCollisionManager->Clear();
+	mAnimationManager->Clear();
+	mTextManager->Clear();
+	// must be at the release end order because this is the base element of the scene
+	mMeshManager->Clear();
+	mMaterialManager->Clear();
+	mTextureManager->Clear();
 }
 
 void Scene::SetCameraAnimation(bool StartAnimation)

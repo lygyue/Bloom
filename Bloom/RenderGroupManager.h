@@ -44,6 +44,8 @@ protected:
 	void RemoveSceneNode(SceneNode* SN);
 
 	void RenderAllQueue() const;
+
+	void Clear();
 private:
 	RenderQueue mRenderGroups[RenderGroup_Max];
 };

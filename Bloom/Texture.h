@@ -114,5 +114,6 @@ protected:
 private:
 	std::map<std::string, D3d11Texture*> mTextureArray;
 
-	GET_AUTO_NAME("Texture")
+	GET_AUTO_NAME("Texture");
+	CLEAR_MAP(mTextureArray);
 };

@@ -97,5 +97,6 @@ protected:
 	void InitialiseStandardShaders();
 private:
 	std::map<std::string, Shader*> mShaderArray;
-	GET_AUTO_NAME("Shader")
+	GET_AUTO_NAME("Shader");
+	CLEAR_MAP(mShaderArray);
 };
