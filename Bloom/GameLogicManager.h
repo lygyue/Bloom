@@ -24,7 +24,7 @@ public:
 	void StartNewGame();
 	void Update();
 
-	void StartNewGame(bool Upgrade);
+	void NotifyStartNewGame(bool Upgrade);
 
 	Player* GetCurrentPlayer() const;
 	static GameLogicManager* GetInstance();
@@ -40,9 +40,11 @@ public:
 	void OnLButtonDbclk(int x, int y, unsigned int wParam);
 	void OnRButtonDbclk(int x, int y, unsigned int wParam);
 protected:
-
+	void StartNewGame(bool Upgrade);
 	void InitialiseAllResource();
 private:
+	bool mStartNewGame;
+	bool mUpdrade;
 	Player* mPlayer;
 	static GameLogicManager* ThisInstance;
 };

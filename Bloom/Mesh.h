@@ -12,19 +12,21 @@
 #include "Common.h"
 #include "GameDef.h"
 #include "Material.h"
+#include "Renderable.h"
 #include <map>
 class MeshManager;
-class Mesh
+class Mesh : public Renderable
 {
 	friend class MeshManager;
 	friend class RenderGroupManager;
 public:
-	std::string GetName() const;
 	Material* GetMaterial() const;
 	void SetMaterial(Material* Mat);
 
 	void SetVisible(bool Visible);
 	bool GetVisible() const;
+
+	virtual void Render(Matrix4& WorldTransform) override;
 protected:
 	Mesh(std::string Name);
 	~Mesh();
@@ -33,7 +35,6 @@ protected:
 	void RenderMesh(Matrix4& WorldTransform) const;
 	void RenderMesh(XMMATRIX& WorldTransform) const;
 private:
-	std::string mName;
 	Material* mMaterial;
 	DataBuffer* mVertexBuffer;
 	DataBuffer* mIndexBuffer;

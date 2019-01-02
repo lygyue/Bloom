@@ -81,6 +81,9 @@
     <ClCompile Include="Timer.cpp">
       <Filter>BaseSystem</Filter>
     </ClCompile>
+    <ClCompile Include="Renderable.cpp">
+      <Filter>BaseSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Bloom.h" />
@@ -174,6 +177,12 @@
     </ClInclude>
     <ClInclude Include="Timer.h">
       <Filter>BaseSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderable.h">
+      <Filter>BaseSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="UIElement.h">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

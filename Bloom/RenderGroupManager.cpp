@@ -13,6 +13,7 @@
 #include "SceneNode.h"
 #include "Math/Matrix4.h"
 #include "GameDef.h"
+#include "Mesh.h"
 
 RenderGroupManager::RenderGroupManager()
 {
@@ -59,11 +60,11 @@ void RenderGroupManager::RenderAllQueue() const
 		{
 			Matrix4 M = RQ[j]->GetWorldTransform();
 			//XMMATRIX M = RQ[j]->GetWorldTransformD3DMath();
-			int MeshCount = RQ[j]->GetAttachMeshCount();
-			for (int k = 0; k < MeshCount; k++)
+			int RenderableCount = RQ[j]->GetAttachRenderableCount();
+			for (int k = 0; k < RenderableCount; k++)
 			{
-				Mesh* mesh = RQ[j]->GetAttachMeshByIndex(k);
-				mesh->RenderMesh(M);
+				Renderable* R = RQ[j]->GetAttachRenderableByIndex(k);
+				R->Render(M);
 			}
 		}
 	}

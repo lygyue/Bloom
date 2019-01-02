@@ -13,10 +13,11 @@
 #include "Math/Vector3.h"
 #include "Math/Quaternion.h"
 #include "Math/Matrix4.h"
-#include "Mesh.h"
 #include "RenderGroupManager.h"
 #include <vector>
 
+class Mesh;
+class Renderable;
 class SceneNode
 {
 	friend class Scene;
@@ -45,6 +46,9 @@ public:
 	bool AttachMesh(Mesh* M);
 	bool DetachMesh(Mesh* M);
 
+	bool AttachRenderable(Renderable* R);
+	bool DetachRenderable(Renderable* R);
+
 	void Scale(const Vector3& scale);
 	void Scale(float x, float y, float z);
 	void Translate(const Vector3& d);
@@ -55,9 +59,9 @@ public:
 	void Rotate(const Vector3& axis, const Radian& angle);
 	void Rotate(const Quaternion& q);
 
-	int GetAttachMeshCount() const;
-	Mesh* GetAttachMeshByIndex(int Index) const;
-	Mesh* GetAttachMeshByName(std::string Name) const;
+	int GetAttachRenderableCount() const;
+	Renderable* GetAttachRenderableByIndex(int Index) const;
+	Renderable* GetAttachRenderableByName(std::string Name) const;
 
 	int GetChildCount() const;
 	SceneNode* GetChildByIndex(int Index) const;
@@ -89,6 +93,6 @@ private:
 	RenderGroup mRenderGroup;
 
 	std::vector<SceneNode*> mChildArray;
-	std::vector<Mesh*> mAttachMeshArray;
+	std::vector<Renderable*> mAttachMeshArray;
 	GET_AUTO_NAME("SceneNode")
 };

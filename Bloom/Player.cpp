@@ -21,17 +21,13 @@
 #include "Text.h"
 #include "Animation.h"
 #include "GameLogicManager.h"
+#include "Mesh.h"
 
 Player::Player(std::string Name)
 {
-	mSpeed = 4 * SCREEN_SPEED;
-	mDefaultSpeed = mSpeed;
-	mMaxSpeed = mSpeed * 4.0f;
 	mName = Name;
-	mMoveDirection = 0;
-	mPlayerSceneNode = nullptr;
-	mPlayerCollision = nullptr;
 	mPlayerScore = nullptr;
+	Reset();
 }
 
 Player::~Player()
@@ -116,6 +112,20 @@ void Player::CreateFlowingText(Vector3 Pos, int PlayerScore)
 	Ani->SetAcceleration(RangeRandom(0.01f, 0.2f));
 }
 
+void Player::Reset()
+{
+	mSpeed = 4 * SCREEN_SPEED;
+	mDefaultSpeed = mSpeed;
+	mMaxSpeed = mSpeed * 4.0f;
+	mMoveDirection = 0;
+	mPlayerSceneNode = nullptr;
+	mPlayerCollision = nullptr;
+	if (mPlayerScore)
+		mPlayerScore->Reset();
+	mFlowingTextArray.clear();
+	mFlowingNodeArray.clear();
+}
+
 void Player::RefreshSpeed(int PlayerScore)
 {
 	if (PlayerScore > 0)
@@ -197,8 +207,7 @@ void Player::Update()
 			}
 			case Block_Die:
 			{
-				GameLogicManager::GetInstance()->StartNewGame(false);
-				mPlayerScore->Reset();
+				GameLogicManager::GetInstance()->NotifyStartNewGame(false);
 				break;
 			}
 			case Block_Final_Flag:
@@ -209,13 +218,12 @@ void Player::Update()
 					{
 						// go into the ending.
 					}
-					GameLogicManager::GetInstance()->StartNewGame(true);
+					GameLogicManager::GetInstance()->NotifyStartNewGame(true);
 				}
 				else
 				{
-					GameLogicManager::GetInstance()->StartNewGame(false);
+					GameLogicManager::GetInstance()->NotifyStartNewGame(false);
 				}
-				mPlayerScore->Reset();
 				break;
 			}
 			default:
@@ -322,8 +330,11 @@ void Player::OnDestroy(Effect* E)
 {
 	// Stop rendering the text mesh. and destroy sometimes later. 
 	// Because there is a flowing text animation running, you must wait for the animation been destroyed.
-	mFlowingTextArray[0]->GetAttachMesh()->SetVisible(false);
-	Timer::GetInstance()->AddOnceTimer(this, 1, 100);
+	if (mFlowingTextArray.size() > 0)
+	{
+		mFlowingTextArray[0]->GetAttachMesh()->SetVisible(false);
+		Timer::GetInstance()->AddOnceTimer(this, 1, 100);
+	}
 }
 
 void Player::OnTimer(unsigned int EventID, void* UserData)
@@ -335,12 +346,15 @@ void Player::OnTimer(unsigned int EventID, void* UserData)
 	}
 	if (EventID == 1)
 	{
-		TextManager* TM = Scene::GetCurrentScene()->GetTextManager();
-		TM->DestroyText(mFlowingTextArray[0]);
-		mFlowingTextArray.erase(mFlowingTextArray.begin());
-		SceneNode* S = mFlowingNodeArray[0];
-		SceneNode* Parent = S->GetParentSceneNode();
-		Parent->RemoveAndDestroyChild(S);
-		mFlowingNodeArray.erase(mFlowingNodeArray.begin());
+		if (mFlowingTextArray.size() > 0)
+		{
+			TextManager* TM = Scene::GetCurrentScene()->GetTextManager();
+			TM->DestroyText(mFlowingTextArray[0]);
+			mFlowingTextArray.erase(mFlowingTextArray.begin());
+			SceneNode* S = mFlowingNodeArray[0];
+			SceneNode* Parent = S->GetParentSceneNode();
+			Parent->RemoveAndDestroyChild(S);
+			mFlowingNodeArray.erase(mFlowingNodeArray.begin());
+		}
 	}
 }

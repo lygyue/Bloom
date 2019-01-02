@@ -235,6 +235,7 @@ private:
 	FontManager* mFontManager;
 	TextManager* mTextManager;
 	bool mCameraAnimation;
+	float mCurrentGameTime;
 
 	Text* mFrameRateText;
 	Text* mFrameRateTextTitle;

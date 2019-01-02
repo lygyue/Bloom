@@ -68,6 +68,7 @@ protected:
 	void Initialise();
 	void CreateFlowingText(Vector3 Pos, int PlayerScore);
 	void RefreshSpeed(int PlayerScore);
+	void Reset();
 
 	SceneNode* mPlayerSceneNode;
 	Collision* mPlayerCollision;

@@ -76,7 +76,6 @@ void ScoreSystem::Reset()
 	mWinScore = 0;
 	mScoreNode = nullptr;
 	mScoreText = nullptr;
-	RefreshScore();
 }
 
 void ScoreSystem::RefreshScore()

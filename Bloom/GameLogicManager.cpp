@@ -19,6 +19,8 @@ GameLogicManager* GameLogicManager::ThisInstance = nullptr;
 
 GameLogicManager::GameLogicManager()
 {
+	mStartNewGame = false;
+	mUpdrade = false;
 	Scene* S = new Scene;
 	Scene::SetCurrentScene(S);
 	S->mGameLogicManager = this;
@@ -73,8 +75,16 @@ void GameLogicManager::StartNewGame()
 	}
 }
 
+void GameLogicManager::NotifyStartNewGame(bool Upgrade)
+{
+	mStartNewGame = true;
+	mUpdrade = Upgrade;
+}
+
 void GameLogicManager::StartNewGame(bool Upgrade)
 {
+	mPlayer->Reset();
+	Timer::GetInstance()->Clear();
 	Scene::GetCurrentScene()->ClearScene();
 	Scene::GetCurrentScene()->CreateSceneContent();
 	if (Upgrade)
@@ -85,10 +95,16 @@ void GameLogicManager::StartNewGame(bool Upgrade)
 	{
 
 	}
+	mStartNewGame = false;
+	mUpdrade = false;
 }
 
 void GameLogicManager::Update()
 {
+	if (mStartNewGame)
+	{
+		StartNewGame(mUpdrade);
+	}
 	Timer::ThisInstance->Update();
 	// calculate frame rate
 	static int FrameRate = 0;

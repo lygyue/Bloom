@@ -13,6 +13,7 @@
 #include <time.h>
 #include <xstring>
 #include <vector>
+#include "GameDef.h"
 
 struct ITimerListener
 {
@@ -78,8 +79,9 @@ private:
 	unsigned long mFrameIndex;
 	BOOL mPauseTimer;
 	DWORD_PTR mTimerMask;
-	std::vector<TimerObject> mTimerEventList;
-	std::vector<TimerObject> mTimerEventOnceList;
+	std::vector<TimerObject*> mTimerEventList;
+	std::vector<TimerObject*> mTimerEventOnceList;
+	CLEAR_VECTOR2(mTimerEventList, mTimerEventOnceList);
 };
 
 #endif // !__TIMER_H__

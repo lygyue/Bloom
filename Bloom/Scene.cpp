@@ -18,6 +18,8 @@
 #include "RenderSystem.h"
 #include "SceneNode.h"
 #include "Score.h"
+#include "Material.h"
+#include "Mesh.h"
 
 Scene* Scene::CurrentScene = nullptr;
 Scene::Scene()
@@ -49,6 +51,7 @@ Scene::Scene()
 	mFrameRateTextNode = nullptr;
 	mFrameRateTextTitleNode = nullptr;
 	mCurrentPoemIndex = 0;
+	mCurrentGameTime = 0.0f;
 }
 
 Scene::~Scene()
@@ -124,6 +127,13 @@ void Scene::CreateSceneContent()
 
 void Scene::ClearScene()
 {
+	mCurrentGameTime = 0.0f;
+	mFrameRateText = nullptr;
+	mFrameRateTextTitle = nullptr;
+	mNodeFollowCamera = nullptr;
+	mFrameRateTextNode = nullptr;
+	mFrameRateTextTitleNode = nullptr;
+	mCameraAnimation = false;
 	mRootSceneNode->DestroyAllChild();
 	mRenderGroupManager->Clear();
 	mEffectManager->Clear();
@@ -131,6 +141,7 @@ void Scene::ClearScene()
 	mCollisionManager->Clear();
 	mAnimationManager->Clear();
 	mTextManager->Clear();
+	mFontManager->Clear();
 	// must be at the release end order because this is the base element of the scene
 	mMeshManager->Clear();
 	mMaterialManager->Clear();
@@ -151,11 +162,10 @@ void Scene::Update()
 {
 	mEffectManager->Update();
 	mAnimationManager->Update();
-	static float CurrentTime = 0.0f;
-	CurrentTime += Timer::GetInstance()->GetDeltaFloat();
+	mCurrentGameTime += Timer::GetInstance()->GetDeltaFloat();
 	float BeginTime = 35.0f;
-	if (CurrentTime > BeginTime) mCameraAnimation = true;
-	if (CurrentTime > BeginTime + GAME_TIME - SCREEN_PASS_TIME / 2) mCameraAnimation = false;
+	if (mCurrentGameTime > BeginTime) mCameraAnimation = true;
+	if (mCurrentGameTime > BeginTime + GAME_TIME - SCREEN_PASS_TIME / 2) mCameraAnimation = false;
 	if (mCameraAnimation)
 	{
 		// update camera
@@ -516,6 +526,7 @@ void Scene::InitialiseScene()
 	// assume the poem in the center of the screen, and the poem is 4 column.
 	float StepX = PoemX * 2.0f / 4.0f;
 	float PoemY = 0;
+	mCurrentPoemIndex = 0;
 	mStartPoem[0] = { L"黄河远上白云间", "Start_Poem_Node1", "TextFadeIn_1" , "TextFadeOut_1", nullptr,  Vector3(PoemX - 0 * StepX, PoemY, RenderGroupManager::GetRenderGroupDepth(RenderGroup_TEXT))};
 	mStartPoem[1] = { L"一片孤城万仞山", "Start_Poem_Node2", "TextFadeIn_2" , "TextFadeOut_2", nullptr,  Vector3(PoemX - 1 * StepX, PoemY, RenderGroupManager::GetRenderGroupDepth(RenderGroup_TEXT)) };
 	mStartPoem[2] = { L"羌笛何须怨杨柳", "Start_Poem_Node3", "TextFadeIn_3" , "TextFadeOut_3", nullptr,  Vector3(PoemX - 2 * StepX, PoemY, RenderGroupManager::GetRenderGroupDepth(RenderGroup_TEXT)) };

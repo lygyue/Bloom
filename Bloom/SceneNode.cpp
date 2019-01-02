@@ -8,6 +8,7 @@
  */
 #include "SceneNode.h"
 #include "Scene.h"
+#include "Renderable.h"
 
 SceneNode::SceneNode(std::string Name)
 	: mName(Name)
@@ -153,22 +154,34 @@ void SceneNode::DestroyAllChild()
 
 bool SceneNode::AttachMesh(Mesh* M)
 {
-	for (int i = 0; i < mAttachMeshArray.size(); i++)
-	{
-		if (mAttachMeshArray[i] == M)
-		{
-			return false;
-		}
-	}
-	mAttachMeshArray.push_back(M);
-	return false;
+	Renderable* R = (Renderable*)(M);
+	return AttachRenderable(R);
 }
 
 bool SceneNode::DetachMesh(Mesh* M)
 {
+	Renderable* R = (Renderable*)(M);
+	return DetachRenderable(R);
+}
+
+bool SceneNode::AttachRenderable(Renderable* R)
+{
 	for (int i = 0; i < mAttachMeshArray.size(); i++)
 	{
-		if (mAttachMeshArray[i] == M)
+		if (mAttachMeshArray[i] == R)
+		{
+			return false;
+		}
+	}
+	mAttachMeshArray.push_back(R);
+	return false;
+}
+
+bool SceneNode::DetachRenderable(Renderable* R)
+{
+	for (int i = 0; i < mAttachMeshArray.size(); i++)
+	{
+		if (mAttachMeshArray[i] == R)
 		{
 			mAttachMeshArray.erase(mAttachMeshArray.begin() + i);
 			return true;
@@ -227,17 +240,17 @@ void SceneNode::Pitch(const Radian& angle)
 	Rotate(Vector3::UNIT_X, angle);
 }
 
-int SceneNode::GetAttachMeshCount() const
+int SceneNode::GetAttachRenderableCount() const
 {
 	return (int)mAttachMeshArray.size();
 }
 
-Mesh* SceneNode::GetAttachMeshByIndex(int Index) const 
+Renderable* SceneNode::GetAttachRenderableByIndex(int Index) const 
 {
 	return mAttachMeshArray[Index];
 }
 
-Mesh* SceneNode::GetAttachMeshByName(std::string Name) const
+Renderable* SceneNode::GetAttachRenderableByName(std::string Name) const
 {
 	for (int i = 0; i < mAttachMeshArray.size(); i++)
 	{

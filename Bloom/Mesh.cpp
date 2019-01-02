@@ -21,17 +21,13 @@ Mesh::Mesh(std::string Name)
 	mVertexElementSize = 12;
 	mVisible = true;
 	mPrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	mRenderType = RenderType::RenderMesh;
 }
 
 Mesh::~Mesh()
 {
 	SAFE_DELETE(mVertexBuffer);
 	SAFE_DELETE(mIndexBuffer);
-}
-
-std::string Mesh::GetName() const
-{
-	return mName;
 }
 
 Material* Mesh::GetMaterial() const
@@ -73,6 +69,13 @@ bool Mesh::Initialise(void* VertexBuffer, int VertexElementSize, int VertexCount
 	mVertexBuffer = new DataBuffer(Device, D3D11_BIND_VERTEX_BUFFER, VertexBuffer, VertexCount * VertexElementSize);
 	mIndexBuffer = new DataBuffer(Device, D3D11_BIND_INDEX_BUFFER, IndexBuffer, IndexBufferLength);
 	return true;
+}
+
+void Mesh::Render(Matrix4& WorldTransform)
+{
+	PreRender();
+	RenderMesh(WorldTransform);
+	PostRender();
 }
 
 void Mesh::RenderMesh(Matrix4& WorldTransform) const
