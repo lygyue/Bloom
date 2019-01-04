@@ -23,9 +23,6 @@ public:
 	Material* GetMaterial() const;
 	void SetMaterial(Material* Mat);
 
-	void SetVisible(bool Visible);
-	bool GetVisible() const;
-
 	virtual void Render(Matrix4& WorldTransform) override;
 protected:
 	Mesh(std::string Name);
@@ -43,7 +40,6 @@ private:
 	UINT mIndexCount;
 	D3D11_PRIMITIVE_TOPOLOGY mPrimitiveType;
 	DXGI_FORMAT mIndexFormat;
-	bool mVisible;
 };
 
 class MeshManager
@@ -53,12 +49,14 @@ public:
 	Mesh* CreateMesh(std::string Name, void* VertexBuffer, int VertexElementSize, int VertexCount, void* IndexBuffer, int IndexCount);
 	Mesh* CreateQuad(std::string Name, Vector3* Vertex = nullptr, Vector2* TexCoord = nullptr);
 	Mesh* CreateLine(std::string Name, Vector3* Vertex);
+	Mesh* CreateLineList(std::string Name, Vector3* Vertex, int VertexCount);
 	Mesh* CreateSphere(std::string Name, int Col, int Row, float Radius);
 	Mesh* CreateBox(std::string Name, const Vector3& V);
 
 	Mesh* CreateMesh(void* VertexBuffer, int VertexElementSize, int VertexCount, void* IndexBuffer, int IndexCount);
 	Mesh* CreateQuad(Vector3* Vertex = nullptr, Vector2* TexCoord = nullptr);
 	Mesh* CreateLine(Vector3* Vertex);
+	Mesh* CreateLineList(Vector3* Vertex, int VertexCount);
 	Mesh* CreateSphere(int Col, int Row, float Radius);
 	Mesh* CreateBox(const Vector3& V);
 

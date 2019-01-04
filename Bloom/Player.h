@@ -42,6 +42,9 @@ public:
 	void SetPlayerCollision(Collision* C);
 	Collision* GetPlayerCollision() const;
 
+	void SetHangUpState(bool Flag);
+	bool GetHangUpState() const;
+
 	void Update();
 
 	void OnKeyDown(unsigned char Key);
@@ -80,4 +83,5 @@ protected:
 	float mDefaultSpeed;
 	float mMaxSpeed;
 	unsigned int mMoveDirection;
+	bool mHangingUp;
 };

@@ -124,6 +124,17 @@ void Player::Reset()
 		mPlayerScore->Reset();
 	mFlowingTextArray.clear();
 	mFlowingNodeArray.clear();
+	mHangingUp = false;
+}
+
+void Player::SetHangUpState(bool Flag)
+{
+	mHangingUp = Flag;
+}
+
+bool Player::GetHangUpState() const
+{
+	return mHangingUp;
 }
 
 void Player::RefreshSpeed(int PlayerScore)
@@ -147,6 +158,7 @@ void Player::RefreshSpeed(int PlayerScore)
 void Player::Update()
 {
 	if (mPlayerSceneNode == nullptr) return;
+	if (mHangingUp) return;
 
 	float Delta = Timer::GetInstance()->GetDeltaFloat();
 	if (mMoveDirection > 0)
@@ -235,6 +247,8 @@ void Player::Update()
 
 void Player::OnKeyDown(unsigned char Key)
 {
+	if (mHangingUp) return;
+
 	switch (Key)
 	{
 	case VK_LEFT:
@@ -264,6 +278,8 @@ void Player::OnKeyDown(unsigned char Key)
 
 void Player::OnKeyUp(unsigned char Key)
 {
+	if (mHangingUp) return;
+
 	switch (Key)
 	{
 	case VK_LEFT:

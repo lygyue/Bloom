@@ -84,6 +84,9 @@
     <ClCompile Include="Renderable.cpp">
       <Filter>BaseSystem</Filter>
     </ClCompile>
+    <ClCompile Include="UIElement.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Bloom.h" />
@@ -182,6 +185,9 @@
       <Filter>BaseSystem</Filter>
     </ClInclude>
     <ClInclude Include="UIElement.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UIWindow.h">
       <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>

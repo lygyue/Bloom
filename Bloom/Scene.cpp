@@ -548,7 +548,7 @@ void Scene::CreateStartPoemEffect(int Index, bool IsFadeIn)
 		TextNode1->AttachMesh(T->GetAttachMesh());
 		EffectTextFadeIn* E = (EffectTextFadeIn*)mEffectManager->CreateEffect(mStartPoem[Index].FadeInEffectName, Effect_Text_Fade_In_In_Order, 8.0f, false, true, 0.0f, T->GetAttachMesh(), TextNode1, nullptr, 0, this);
 		E->SetTextColor(StartPoemColor);
-		E->SetTextCount(T->GetTextCount());
+		E->SetTextCount(T->GetCharacterCount());
 		mStartPoem[Index].T = T;
 	}
 	else

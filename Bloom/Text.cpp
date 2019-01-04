@@ -36,7 +36,7 @@ Mesh* Text::GetAttachMesh() const
 	return mAttachMesh;
 }
 
-int Text::GetTextCount() const
+int Text::GetCharacterCount() const
 {
 	return mTextCount;
 }

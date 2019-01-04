@@ -14,60 +14,34 @@
 Material::Material(std::string Name)
 {
 	memset(mConstBuffer, 0, sizeof(mConstBuffer));
-	mConstBufferLen = 0;
-	mMainTextureIndex = 0;
-	mTextureCount = 0;
-	for (int i = 0; i < MaxTexture; i++)
-	{
-		mTex[i] = nullptr;
-	}	
-	mShader = nullptr;
-	mName = Name;
-	HRESULT result = S_OK;
-	ID3D11Device* Device = Scene::GetCurrentScene()->GetRenderSystem()->GetD3d11Device();
-	// Create sampler state
-	D3D11_SAMPLER_DESC ss; memset(&ss, 0, sizeof(ss));
-	ss.AddressU = ss.AddressV = ss.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	ss.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	ss.ComparisonFunc = D3D11_COMPARISON_NEVER;
-	ss.MaxAnisotropy = 0;
-	ss.MaxLOD = D3D11_FLOAT32_MAX;
-	result = Device->CreateSamplerState(&ss, &mSamplerState);
+	memset(mTex, 0, sizeof(mTex));
 
-	// Create rasterizer
-	D3D11_RASTERIZER_DESC rs; memset(&rs, 0, sizeof(rs));
-	rs.AntialiasedLineEnable = false;			
-	rs.DepthClipEnable = true;
-	rs.MultisampleEnable = true;				// if this true, rs.AntialiasedLineEnable must be false.
-	rs.CullMode = D3D11_CULL_BACK;
-	rs.FillMode = D3D11_FILL_SOLID;
-	result = Device->CreateRasterizerState(&rs, &mRasterizer);
-
-	// Create depth state
-	D3D11_DEPTH_STENCIL_DESC dss;
-	memset(&dss, 0, sizeof(dss));
-	dss.DepthEnable = true;
-	dss.DepthFunc = D3D11_COMPARISON_LESS;
-	dss.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	result = Device->CreateDepthStencilState(&dss, &mDepthState);
-
-	//Create blend state - trans or otherwise
-	D3D11_BLEND_DESC bm;
-	memset(&bm, 0, sizeof(bm));
-	bm.RenderTarget[0].BlendEnable = true;
-	bm.RenderTarget[0].BlendOp = bm.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-	bm.RenderTarget[0].SrcBlend = bm.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
-	bm.RenderTarget[0].DestBlend = bm.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
-	bm.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-	result = Device->CreateBlendState(&bm, &mBlendState);
+	mSamplerState				= nullptr;
+	mRasterizer					= nullptr;
+	mDepthState					= nullptr;
+	mBlendState					= nullptr;
+	mConstBufferLen				= 0;
+	mMainTextureIndex			= 0;
+	mTextureCount				= 0;
+	mShader						= nullptr;
+	mName						= Name;
+	mTextureAddressMode			= D3D11_TEXTURE_ADDRESS_WRAP;
+	mTextureFilter				= D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+	mTextureCompareFunc			= D3D11_COMPARISON_NEVER;
+	mTextureMaxAnisotropy		= 0;
+	mTextureMaxLOD				= D3D11_FLOAT32_MAX;
+	mMultisampleEnable			= true;
+	mFillMode					= D3D11_FILL_SOLID;
+	mDepthEnable				= true;
+	mDepthFunc					= D3D11_COMPARISON_LESS;
+	mBlendEnable				= true;
+	mBlendOP					= D3D11_BLEND_OP_ADD;
+	ReBuild();
 }
 
 Material::~Material()
 {
-	SAFE_RELEASE(mSamplerState);
-	SAFE_RELEASE(mRasterizer);
-	SAFE_RELEASE(mDepthState);
-	SAFE_RELEASE(mBlendState);
+	Clear();
 }
 
 char* Material::GetConstBufferPointer()
@@ -100,7 +74,115 @@ void Material::SetShader(Shader* S)
 	mShader = S;
 }
 
-void Material::Reset()
+void Material::SetTextureAddressMode(D3D11_TEXTURE_ADDRESS_MODE DTAM /* = D3D11_TEXTURE_ADDRESS_WRAP */)
+{
+	mTextureAddressMode = DTAM;
+}
+
+void Material::SetTextureFilter(D3D11_FILTER DF /* = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR */)
+{
+	mTextureFilter = DF;
+}
+
+void Material::SetMultiSampeEnable(bool Enable /* = true */)
+{
+	mMultisampleEnable = Enable;
+}
+
+void Material::SetFillMode(D3D11_FILL_MODE DFM /* = D3D11_FILL_SOLID */)
+{
+	mFillMode = DFM;
+}
+
+void Material::SetDepthEnable(bool Enable /* = true */)
+{
+	mDepthEnable = Enable;
+}
+
+void Material::SetDepthFunc(D3D11_COMPARISON_FUNC DCF /* = D3D11_COMPARISON_LESS */)
+{
+	mDepthFunc = DCF;
+}
+
+void Material::SetBlendEnable(bool Enable /* = true */)
+{
+	mBlendEnable = Enable;
+}
+
+void Material::SetBlendOP(D3D11_BLEND_OP DBO /* = D3D11_BLEND_OP_ADD */)
+{
+	mBlendOP = DBO;
+}
+
+void Material::Clear()
+{
+	SAFE_RELEASE(mSamplerState);
+	SAFE_RELEASE(mRasterizer);
+	SAFE_RELEASE(mDepthState);
+	SAFE_RELEASE(mBlendState);
+}
+
+bool Material::ReBuild()
+{
+	Clear();
+	HRESULT result = S_OK;
+	ID3D11Device* Device = Scene::GetCurrentScene()->GetRenderSystem()->GetD3d11Device();
+	// Create sampler state
+	D3D11_SAMPLER_DESC ss; memset(&ss, 0, sizeof(ss));
+	ss.AddressU = ss.AddressV = ss.AddressW = mTextureAddressMode;
+	ss.Filter = mTextureFilter;
+	ss.ComparisonFunc = mTextureCompareFunc;
+	ss.MaxAnisotropy = mTextureMaxAnisotropy;
+	ss.MaxLOD = mTextureMaxLOD;
+	result = Device->CreateSamplerState(&ss, &mSamplerState);
+	if (FAILED(result))
+	{
+		return false;
+	}
+
+	// Create rasterizer
+	D3D11_RASTERIZER_DESC rs; memset(&rs, 0, sizeof(rs));
+	if(mMultisampleEnable)
+		rs.AntialiasedLineEnable = false;
+	else
+		rs.AntialiasedLineEnable = true;
+	rs.DepthClipEnable = true;
+	rs.MultisampleEnable = mMultisampleEnable;				// if this true, rs.AntialiasedLineEnable must be false.
+	rs.CullMode = D3D11_CULL_BACK;
+	rs.FillMode = mFillMode;
+	result = Device->CreateRasterizerState(&rs, &mRasterizer);
+	if (FAILED(result))
+	{
+		return false;
+	}
+	// Create depth state
+	D3D11_DEPTH_STENCIL_DESC dss;
+	memset(&dss, 0, sizeof(dss));
+	dss.DepthEnable = mDepthEnable;
+	dss.DepthFunc = mDepthFunc;
+	dss.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	result = Device->CreateDepthStencilState(&dss, &mDepthState);
+	if (FAILED(result))
+	{
+		return false;
+	}
+	//Create blend state - trans or otherwise
+	D3D11_BLEND_DESC bm;
+	memset(&bm, 0, sizeof(bm));
+	bm.RenderTarget[0].BlendEnable = mBlendEnable;
+	bm.RenderTarget[0].BlendOp = bm.RenderTarget[0].BlendOpAlpha = mBlendOP;
+	bm.RenderTarget[0].SrcBlend = bm.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
+	bm.RenderTarget[0].DestBlend = bm.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
+	bm.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	result = Device->CreateBlendState(&bm, &mBlendState);
+	if (FAILED(result))
+	{
+		return false;
+	}
+	return true;
+}
+
+void Material::ResetTexture()
 {
 	for (int i = 0; i < mTextureCount; i++)
 	{

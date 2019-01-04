@@ -36,10 +36,13 @@ public:
 	void PreRender();
 	void PostRender();
 
+	void SetVisible(bool Visible);
+	bool GetVisible() const;
 	virtual void Render(Matrix4& WorldTransform){}
 protected:
 	RenderType mRenderType;
 	RenderableListener* mListener;
 
 	std::string mName;
+	bool mVisible;
 };

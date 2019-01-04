@@ -1,34 +1,24 @@
 /***********************************************
- * File: UIElement.h
+ * File: UIWindow.h
  *
  * Author: LYG
- * Date: 十二月 2018
+ * Date: 一月 2019
  *
  * Purpose:
  *
  * 
  **********************************************/
 #pragma once
-#include "Math/Matrix4.h"
 
-enum UIElementType
+#include <vector>
+#include "Renderable.h"
+
+class UIElement;
+class UIWindows : public Renderable
 {
-	ElementBackGroundSheet,
-	ElementUIText,
-	ElementButtonBG,
-	ElementButtonTitle,
-	ElementButtonText,
-	ElementTextBeenCover,
-
-};
-
-class Mesh;
-class UIElement
-{
+	friend class UIWindowManager;
 public:
-	UIElementType GetElementType() const;
-	void SetVisible(bool Visible);
-	bool GetVisible() const;
+	virtual void Render(Matrix4& WorldTransform) override;
 
 	virtual void OnLButtonDown(int x, int y, unsigned int wParam);
 	virtual void OnLButtonUp(int x, int y, unsigned int wParam);
@@ -38,14 +28,23 @@ public:
 	virtual void OnLButtonDbclk(int x, int y, unsigned int wParam);
 	virtual void OnRButtonDbclk(int x, int y, unsigned int wParam);
 protected:
-	UIElement();
-	virtual ~UIElement();
+	UIWindows();
+	virtual ~UIWindows();
 
-	void Render(Matrix4 WorldTransform);
+	void AddElement(UIElement* E);
+	UIElement* GetElementByIndex(int Index) const;
+	unsigned int GetElementCounts() const;
 
-	Mesh* mMesh;
-	UIElementType mElementType;
-	Vector3 mMax;
-	Vector3 mMin;
-	bool mVisible;
+	std::vector<UIElement*> mElementArray;
+};
+
+
+class UIWindowManager
+{
+public:
+
+protected:
+private:
+	std::vector<UIWindows*>	mWindowArray;
+	std::vector<UIWindows*>	mShowWindowArray;
 };

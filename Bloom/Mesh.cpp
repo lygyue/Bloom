@@ -19,7 +19,6 @@ Mesh::Mesh(std::string Name)
 	mIndexBuffer = nullptr;
 	mIndexFormat = DXGI_FORMAT_R16_UINT;
 	mVertexElementSize = 12;
-	mVisible = true;
 	mPrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	mRenderType = RenderType::RenderMesh;
 }
@@ -38,16 +37,6 @@ Material* Mesh::GetMaterial() const
 void Mesh::SetMaterial(Material* Mat)
 {
 	mMaterial = Mat;
-}
-
-void Mesh::SetVisible(bool Visible)
-{
-	mVisible = Visible;
-}
-
-bool Mesh::GetVisible() const
-{
-	return mVisible;
 }
 
 bool Mesh::Initialise(void* VertexBuffer, int VertexElementSize, int VertexCount, void* IndexBuffer, int IndexCount, D3D11_PRIMITIVE_TOPOLOGY Primitive/* = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST*/)
@@ -221,6 +210,11 @@ Mesh* MeshManager::CreateLine(Vector3* Vertex)
 	return CreateLine(GetAutoName(), Vertex);
 }
 
+Mesh* MeshManager::CreateLineList(Vector3* Vertex, int VertexCount)
+{
+	return CreateLineList(GetAutoName(), Vertex, VertexCount);
+}
+
 Mesh* MeshManager::CreateLine(std::string Name, Vector3* Vertex)
 {
 	if (mMeshArray.find(NULL) != mMeshArray.end())
@@ -235,6 +229,22 @@ Mesh* MeshManager::CreateLine(std::string Name, Vector3* Vertex)
 	return M;
 }
 
+Mesh* MeshManager::CreateLineList(std::string Name, Vector3* Vertex, int VertexCount)
+{
+	if (mMeshArray.find(NULL) != mMeshArray.end())
+	{
+		return mMeshArray[Name];
+	}
+	// assume as 0, 1, 2, 3
+	int IndexCount = (VertexCount - 1) * 2;
+	short* Indexbuffer = new short[IndexCount];
+	Mesh* M = new Mesh(Name);
+	M->Initialise(Vertex, sizeof(Vector3), VertexCount, Indexbuffer, IndexCount, D3D_PRIMITIVE_TOPOLOGY_LINELIST);
+	mMeshArray[Name] = M;
+	delete[]Indexbuffer;
+	return M;
+}
+
 Mesh* MeshManager::CreateSphere(int Col, int Row, float Radius)
 {
 	return CreateSphere(GetAutoName(), Col, Row, Radius);
@@ -242,7 +252,6 @@ Mesh* MeshManager::CreateSphere(int Col, int Row, float Radius)
 
 Mesh* MeshManager::CreateSphere(std::string Name, int Col, int Row, float Radius)
 {
-
 	if (mMeshArray.find(Name) != mMeshArray.end())
 	{
 		return mMeshArray[Name];

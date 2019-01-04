@@ -36,7 +36,7 @@ public:
 		Original_Left,
 	};
 	Mesh* GetAttachMesh() const;
-	int GetTextCount() const;
+	int GetCharacterCount() const;
 	Text::OriginalMode GetTextAlignMode() const;
 	void SetVisible(bool Visible);
 	bool GetVisible() const;
