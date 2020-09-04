@@ -186,3 +186,5 @@ public:
 		return octaveNoise(x, y, z, octaves) * 0.5 + 0.5;
 	}
 };
+
+extern void BuildPerlinTexture(unsigned char* Data, int Width, int Height, unsigned int seed);

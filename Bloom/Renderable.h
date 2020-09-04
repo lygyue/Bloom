@@ -18,6 +18,7 @@ enum RenderType
 	RenderParticle,
 
 };
+class SceneNode;
 class Renderable
 {
 public:
@@ -36,13 +37,20 @@ public:
 	void PreRender();
 	void PostRender();
 
-	void SetVisible(bool Visible);
-	bool GetVisible() const;
+	virtual void SetAttachSceneNode(SceneNode* SN);
+	virtual SceneNode* GetAttachSceneNode() const;
+	virtual void SetVisible(bool Visible);
+	virtual bool GetVisible() const;
 	virtual void Render(Matrix4& WorldTransform){}
+
+	virtual void SetPerspect(bool Perspect);
+	virtual bool GetPerspect() const;
 protected:
 	RenderType mRenderType;
 	RenderableListener* mListener;
+	SceneNode* mAttachSceneNode;
 
 	std::string mName;
 	bool mVisible;
+	bool mIsPerspect;
 };

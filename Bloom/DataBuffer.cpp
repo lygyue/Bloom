@@ -34,11 +34,24 @@ DepthBuffer::~DepthBuffer()
 	SAFE_RELEASE(TexDsv);
 }
 
-DataBuffer::DataBuffer(ID3D11Device * Device, D3D11_BIND_FLAG use, const void* buffer, size_t size) : Size(size)
+DataBuffer::DataBuffer(ID3D11Device * Device, D3D11_BIND_FLAG use, const void* buffer, size_t size, int CpuAccessFlag/* = 1*/) : Size(size)
 {
 	D3D11_BUFFER_DESC desc;   memset(&desc, 0, sizeof(desc));
-	desc.Usage = D3D11_USAGE_DYNAMIC;
-	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	if (CpuAccessFlag == 0)
+	{
+		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.CPUAccessFlags = 0;
+	}
+	else if(CpuAccessFlag == 1)
+	{
+		desc.Usage = D3D11_USAGE_DYNAMIC;
+		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	}
+	else if (CpuAccessFlag == 2)
+	{
+		desc.Usage = D3D11_USAGE_STAGING;
+		desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+	}
 	desc.BindFlags = use;
 	desc.ByteWidth = (unsigned)size;
 	D3D11_SUBRESOURCE_DATA sr;
@@ -51,7 +64,72 @@ DataBuffer::DataBuffer(ID3D11Device * Device, D3D11_BIND_FLAG use, const void* b
 	}
 }
 
+void DataBuffer::UpdateData(ID3D11DeviceContext * Context, const void* buffer, size_t size)
+{
+	HRESULT hr = S_OK;
+	D3D11_MAPPED_SUBRESOURCE map;
+	memset(&map, 0, sizeof(D3D11_MAPPED_SUBRESOURCE));
+	hr = Context->Map(D3DBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &map);
+	if (SUCCEEDED(hr))
+	{
+		memcpy(map.pData, buffer, size);
+		Context->Unmap(D3DBuffer, 0);
+	}
+}
+
+bool DataBuffer::ReadData(ID3D11DeviceContext * Context, void* buffer, size_t size)
+{
+	HRESULT hr = S_OK;
+	D3D11_MAPPED_SUBRESOURCE map;
+	memset(&map, 0, sizeof(D3D11_MAPPED_SUBRESOURCE));
+	hr = Context->Map(D3DBuffer, 0, D3D11_MAP_READ, 0, &map);
+	if (SUCCEEDED(hr))
+	{
+		memcpy(buffer, map.pData, size);
+		Context->Unmap(D3DBuffer, 0);
+		return true;
+	}
+
+	return false;
+}
+
 DataBuffer::~DataBuffer()
 {
 	SAFE_RELEASE(D3DBuffer);
+}
+
+
+UAVBuffer::UAVBuffer(ID3D11Device * Device, const void* buffer, size_t stride, size_t counts)
+{
+	D3D11_BUFFER_DESC buffer_desc;
+	memset(&buffer_desc, 0, sizeof(buffer_desc));
+
+	buffer_desc.ByteWidth = UINT(stride * counts);
+	buffer_desc.Usage = D3D11_USAGE_DEFAULT;
+	buffer_desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
+	buffer_desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+	buffer_desc.StructureByteStride = (UINT)stride;
+	buffer_desc.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA sr;
+	sr.pSysMem = buffer? buffer:buffer;
+	sr.SysMemPitch = sr.SysMemSlicePitch = 0;
+
+	HRESULT hr;
+	hr = Device->CreateBuffer(&buffer_desc, &sr, &D3DBuffer);
+
+	D3D11_UNORDERED_ACCESS_VIEW_DESC uavbuffer_desc = {};
+
+	uavbuffer_desc.Format = DXGI_FORMAT_UNKNOWN;
+	uavbuffer_desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+	uavbuffer_desc.Buffer.NumElements = (UINT)counts;
+
+	hr = Device->CreateUnorderedAccessView(D3DBuffer, &uavbuffer_desc, &UAV);
+
+}
+
+UAVBuffer::~UAVBuffer()
+{
+	SAFE_RELEASE(D3DBuffer);
+	SAFE_RELEASE(UAV);
 }

@@ -16,6 +16,7 @@
 #include "Timer.h"
 #include "SceneNode.h"
 #include "Scene.h"
+#include "Material.h"
 
 Animation::Animation(std::string Name)
 {
@@ -254,6 +255,107 @@ void FlowingTextAnimation::Update()
 
 	mAttachNode->SetPosition(Pos);
 }
+//-----------------------------------------------------------------------
+UIBackGroundAnimation::UIBackGroundAnimation(std::string Name) 
+	: Animation(Name)
+{
+	mAnimationType = Animation_UI_UV;
+	mStyleColor = Vector4::ZERO;
+	mMaterial = nullptr;
+	mSpline = new SimpleSpline;
+}
+
+UIBackGroundAnimation::~UIBackGroundAnimation()
+{
+	SAFE_DELETE(mSpline);
+}
+
+void UIBackGroundAnimation::AddPoint(Vector2 Pos, float fTime)
+{
+	AddPoint(Vector3(Pos.x, Pos.y, 0), fTime);
+}
+
+void UIBackGroundAnimation::AddPoint(Vector3 Pos, float fTime)
+{
+	mSpline->addPoint(Pos);
+	mTimes.push_back(fTime);
+	mAnimationLength = fTime;
+}
+
+void UIBackGroundAnimation::GetPoint(Vector3& Pos, float& fTime, int Index) const
+{
+	if (Index >= (int)mTimes.size())
+	{
+		return;
+	}
+	Pos = mSpline->getPoint(unsigned short(Index));
+	fTime = mTimes[Index];
+}
+
+void UIBackGroundAnimation::AttachMaterial(Material* Mat)
+{
+	mMaterial = Mat;
+}
+
+Material* UIBackGroundAnimation::GetAttachMaterial() const
+{
+	return mMaterial;
+}
+
+void UIBackGroundAnimation::AddRoundPoint(float fTime)
+{
+	Vector3 Pos = mSpline->getPoint(0);
+	AddPoint(Pos, fTime);
+}
+
+void UIBackGroundAnimation::SetStyleColor(Vector4 Col)
+{
+	mStyleColor = Col;
+}
+
+Vector4 UIBackGroundAnimation::GetStyleColor() const
+{
+	return mStyleColor;
+}
+
+void UIBackGroundAnimation::Update()
+{
+	if (mIsPause) return;
+	if (mMaterial == nullptr) return;
+	mCurrentTime += Timer::GetInstance()->GetDeltaFloat();
+	if (mCurrentTime >= mAnimationLength)
+	{
+		if (mIsLoop)
+		{
+			mCurrentTime -= mAnimationLength;
+		}
+		else
+		{
+			mIsEnd = true;
+			mCurrentTime = mAnimationLength;
+		}
+	}
+	size_t Index = 0;
+	float Length = 0.0f;
+	float TimeInterpolate = 0.0f;
+	for (size_t i = 0; i < mTimes.size() - 1; i++)
+	{
+		if (mTimes[i] <= mCurrentTime && mCurrentTime <= mTimes[i + 1])
+		{
+			Index = i;
+			Length = mTimes[i + 1] - mTimes[i];
+			TimeInterpolate = mCurrentTime - mTimes[i];
+			break;
+		}
+	}
+	float t = TimeInterpolate / Length;
+	Vector3 Pos = mSpline->interpolate(int(Index), t);
+	Vector2 UV = Vector2(Pos.x, Pos.y);
+	char* P = mMaterial->GetConstBufferPointer();
+	memcpy(P, &mStyleColor, sizeof(Vector4));
+	memcpy(P + sizeof(Vector4), &UV, sizeof(Vector2));
+	mMaterial->SetConstBufferLen(sizeof(Vector4) + sizeof(Vector2));
+}
 
 //-----------------------------------------------------------------------
 
@@ -287,6 +389,9 @@ Animation* AnimationManager::CreateAnimation(std::string Name, AnimationType AT)
 		break;
 	case Animation_FlowingText:
 		Ani = new FlowingTextAnimation(Name);
+		break;
+	case Animation_UI_UV:
+		Ani = new UIBackGroundAnimation(Name);
 		break;
 	case Animation_UV:
 		break;

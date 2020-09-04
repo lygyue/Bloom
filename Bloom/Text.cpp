@@ -22,6 +22,8 @@ Text::Text()
 	mAttachMesh = nullptr;
 	mAlignMode = Original_Center;
 	mTextCount = 0;
+	mWidth = 0;
+	mHeight = 0;
 }
 
 Text::~Text()
@@ -61,10 +63,22 @@ std::wstring Text::GetName() const
 	return mName;
 }
 
+int Text::GetWidth() const
+{
+	return mWidth;
+}
+
+int Text::GetHeight() const
+{
+	return mHeight;
+}
+
 void Text::BuildTextQuad(QuadStruct* QS, int StartX, int StartY, int EndX, int EndY, TextInfo* TI)
 {
 	int WindowWidth = Scene::GetCurrentScene()->GetWindowWidth();
 	int WindowHeight = Scene::GetCurrentScene()->GetWindowHeight();
+	// calculate the real projection coordinate of the quad
+	// the real width is (width / window width), and the projection coordinate is (-1, 1)
 	Vector3 Pos1 = Vector3(float(StartX << 1) / float(WindowWidth), float(StartY << 1) / float(WindowHeight), 0);
 	Vector3 Pos2 = Vector3(float(EndX << 1) / float(WindowWidth), float(EndY << 1) / float(WindowHeight), 0);
 	QS[0].Position = Pos1;
@@ -106,6 +120,8 @@ bool Text::BuildText(std::vector<TextInfo *>& V, Vector4& TextColor, bool Horizo
 			EndX = StartX + V[i]->width;
 			EndY = -(V[i]->height - V[i]->horiBearingY);
 			HorizontalAdvance += V[i]->horiAdvance;
+			// save the text max height
+			mHeight = Max(mHeight, V[i]->height);
 			QuadStruct VS[4];
 			BuildTextQuad(VS, StartX, StartY, EndX, EndY, V[i]);
 			VS[0].Index = VS[1].Index = VS[2].Index = VS[3].Index = (unsigned int)i;
@@ -124,6 +140,8 @@ bool Text::BuildText(std::vector<TextInfo *>& V, Vector4& TextColor, bool Horizo
 			EndX = V[i]->width + StartX;	// StartX is less than 0
 			EndY = StartY - V[i]->height;
 			VerticalAdvance -= V[i]->vertAdvance;
+			// save the text max width
+			mWidth = Max(mWidth, V[i]->width);
 			QuadStruct VS[4];
 			BuildTextQuad(VS, StartX, StartY, EndX, EndY, V[i]);
 			VS[0].Index = VS[1].Index = VS[2].Index = VS[3].Index = (unsigned int)i;
@@ -135,6 +153,14 @@ bool Text::BuildText(std::vector<TextInfo *>& V, Vector4& TextColor, bool Horizo
 		}
 	}
 	Vector3 Translate = Vector3::ZERO;
+	if (Horizontal)
+	{
+		mWidth = abs(HorizontalAdvance);
+	}
+	else
+	{
+		mHeight = abs(VerticalAdvance);
+	}
 	switch (OM)
 	{
 	case Text::Original_Center:

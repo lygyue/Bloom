@@ -44,6 +44,12 @@ public:
 	void SetDepthFunc(D3D11_COMPARISON_FUNC DCF = D3D11_COMPARISON_LESS);
 	void SetBlendEnable(bool Enable = true);
 	void SetBlendOP(D3D11_BLEND_OP DBO = D3D11_BLEND_OP_ADD);
+	void SetCullMode(D3D11_CULL_MODE CullMode);
+
+	ID3D11SamplerState* GetSampleState();
+	ID3D11RasterizerState* GetRasterState();
+	ID3D11DepthStencilState* GetDepthStencilState();
+	ID3D11BlendState* GetBlendState();
 protected:
 	Material(std::string Name);
 	~Material();
@@ -71,6 +77,7 @@ protected:
 	D3D11_COMPARISON_FUNC				mDepthFunc;
 	bool								mBlendEnable;
 	D3D11_BLEND_OP						mBlendOP;
+	D3D11_CULL_MODE						mCullMode;
 };
 
 class MaterialManager

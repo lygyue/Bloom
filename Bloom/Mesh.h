@@ -19,6 +19,7 @@ class Mesh : public Renderable
 {
 	friend class MeshManager;
 	friend class RenderGroupManager;
+	friend class UIElement;
 public:
 	Material* GetMaterial() const;
 	void SetMaterial(Material* Mat);
@@ -29,8 +30,8 @@ protected:
 	~Mesh();
 
 	bool Initialise(void* VertexBuffer, int VertexElementSize, int VertexCount, void* IndexBuffer, int IndexCount, D3D11_PRIMITIVE_TOPOLOGY Primitive = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	void RenderMesh(Matrix4& WorldTransform) const;
-	void RenderMesh(XMMATRIX& WorldTransform) const;
+	void RenderMesh(Matrix4& WorldTransform, bool IsPerspective = true) const;
+	void RenderMesh(XMMATRIX& XMTransform) const;
 private:
 	Material* mMaterial;
 	DataBuffer* mVertexBuffer;
@@ -68,7 +69,6 @@ protected:
 	MeshManager();
 	~MeshManager();
 
-	void DestroyAllMesh();
 private:
 	std::map<std::string, Mesh*> mMeshArray;
 

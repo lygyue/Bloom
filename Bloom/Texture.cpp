@@ -292,6 +292,8 @@ D3d11Texture* TextureManager::LoadTextureFromMemory(std::string Name, ID3D11Devi
 
 void TextureManager::DestroyTexture(D3d11Texture* Tex)
 {
+	if (Tex == nullptr) return;
+
 	std::string Name = Tex->GetName();
 	mTextureArray.erase(Name);
 	SAFE_DELETE(Tex);

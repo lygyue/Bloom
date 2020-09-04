@@ -174,6 +174,7 @@ bool SceneNode::AttachRenderable(Renderable* R)
 		}
 	}
 	mAttachMeshArray.push_back(R);
+	R->SetAttachSceneNode(this);
 	return false;
 }
 
@@ -184,6 +185,7 @@ bool SceneNode::DetachRenderable(Renderable* R)
 		if (mAttachMeshArray[i] == R)
 		{
 			mAttachMeshArray.erase(mAttachMeshArray.begin() + i);
+			R->SetAttachSceneNode(nullptr);
 			return true;
 		}
 	}

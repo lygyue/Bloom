@@ -23,7 +23,7 @@ public:
 		mAspect = 1920.0f / 1080.0f;
 		mNearPlane = NEAR_PLANE;
 		mFarPlane = FAR_PLANE;
-		mViewMatrix = mProjectionMatrix = mViewProjectionMatrix= XMMatrixIdentity();
+		mViewMatrix = mProjectionMatrix = mViewProjectionMatrix = mProjectionMatrixPerspect = mViewProjectionMatrixPerspect = XMMatrixIdentity();
 	}
 	~Camera(){}
 	void SetPosition(XMVECTOR Position)
@@ -32,6 +32,7 @@ public:
 		XMVECTOR forward = XMVector3Rotate(XMVectorSet(0, 0, 1, 0), mRot);
 		mViewMatrix = (XMMatrixLookAtLH(mPos, XMVectorAdd(mPos, forward), XMVector3Rotate(XMVectorSet(0, 1, 0, 0), mRot)));
 		mViewProjectionMatrix = XMMatrixMultiply(mViewMatrix, mProjectionMatrix);
+		mViewProjectionMatrixPerspect = XMMatrixMultiply(mViewMatrix, mProjectionMatrixPerspect);
 	}
 	void SetRotation(XMVECTOR Rotation)
 	{
@@ -39,6 +40,7 @@ public:
 		XMVECTOR forward = XMVector3Rotate(XMVectorSet(0, 0, 1, 0), mRot);
 		mViewMatrix = (XMMatrixLookAtLH(mPos, XMVectorAdd(mPos, forward), XMVector3Rotate(XMVectorSet(0, 1, 0, 0), mRot)));
 		mViewProjectionMatrix = XMMatrixMultiply(mViewMatrix, mProjectionMatrix);
+		mViewProjectionMatrixPerspect = XMMatrixMultiply(mViewMatrix, mProjectionMatrixPerspect);
 	}
 	void Translate(float x, float y, float z)
 	{
@@ -60,8 +62,9 @@ public:
 		mNearPlane = Near;
 		mFarPlane = Far;
 		mProjectionMatrix = XMMatrixOrthographicLH(mFovAngle, mAspect, mNearPlane, mFarPlane);
-		//mProjectionMatrix = XMMatrixPerspectiveFovLH(mFovAngle, mAspect, mNearPlane, mFarPlane);
+		mProjectionMatrixPerspect = XMMatrixPerspectiveFovLH(mFovAngle, mAspect, mNearPlane, mFarPlane);
 		mViewProjectionMatrix = XMMatrixMultiply(mViewMatrix, mProjectionMatrix);
+		mViewProjectionMatrixPerspect = XMMatrixMultiply(mViewMatrix, mProjectionMatrixPerspect);
 	}
 	XMMATRIX GetViewMatrix() const
 	{
@@ -75,6 +78,16 @@ public:
 	XMMATRIX GetProjectViewMatrix() const
 	{
 		return mViewProjectionMatrix;
+	}
+
+	XMMATRIX GetProjectionMatrixPerspect() const
+	{
+		return mProjectionMatrixPerspect;
+	}
+
+	XMMATRIX GetProjectViewMatrixPerspect() const
+	{
+		return mViewProjectionMatrixPerspect;
 	}
 
 	static void* operator new(size_t size)
@@ -97,6 +110,8 @@ private:
 	XMMATRIX mViewMatrix;
 	XMMATRIX mProjectionMatrix;
 	XMMATRIX mViewProjectionMatrix;
+	XMMATRIX mProjectionMatrixPerspect;
+	XMMATRIX mViewProjectionMatrixPerspect;
 };
 enum BlockPro;
 enum RenderGroup;
@@ -112,6 +127,8 @@ class ResourceManager;
 class MaterialManager;
 class SceneNode;
 class MeshManager;
+class UIWindowManager;
+class ParticleManager;
 class Scene : public Effect::EffectListener, public ITimerListener
 {
 	friend class GameLogicManager;
@@ -137,6 +154,8 @@ public:
 	AnimationManager* GetAnimationManager() const;
 	FontManager* GetFontManager() const;
 	TextManager* GetTextManager() const;
+	UIWindowManager* GetUIWindowManager() const;
+	ParticleManager* GetParticleManager() const;
 
 	std::string GetApplicationPath() const;
 
@@ -153,6 +172,8 @@ public:
 
 	int GetWindowWidth() const;
 	int GetWindowHeight() const;
+	static Vector2 WindowsCoordToProjectionCoord(int x, int y);
+	static Vector2 WindowsCoordToWindowsPercent(int x, int y);
 public:
 	// override from Effect::EffectListener
 	virtual void OnInitialise(Effect* E) override;
@@ -213,6 +234,7 @@ protected:
 	void SwitchToNextBackGround();
 	void CreateStartPoemEffect(int Index, bool IsFadeIn);
 	void CreateBullets();
+	void CreateParticle();
 	void CreateSceneContent();
 	void ClearScene();
 private:
@@ -234,6 +256,8 @@ private:
 	AnimationManager* mAnimationManager;
 	FontManager* mFontManager;
 	TextManager* mTextManager;
+	UIWindowManager* mUIWindowsManager;
+	ParticleManager* mParticleManager;
 	bool mCameraAnimation;
 	float mCurrentGameTime;
 

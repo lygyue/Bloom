@@ -14,12 +14,14 @@
 #include "Collision.h"
 #include "Font.h"
 #include "Text.h"
+#include "UIWindow.h"
 #include "ResourceManager.h"
 #include "RenderSystem.h"
 #include "SceneNode.h"
 #include "Score.h"
 #include "Material.h"
 #include "Mesh.h"
+#include "Particle.h"
 
 Scene* Scene::CurrentScene = nullptr;
 Scene::Scene()
@@ -40,6 +42,8 @@ Scene::Scene()
 	mAnimationManager = new AnimationManager;
 	mFontManager = new FontManager;
 	mTextManager = new TextManager;
+	mUIWindowsManager = new UIWindowManager;
+	mParticleManager = new ParticleManager;
 	mGameLogicManager = nullptr;
 	mCurrentFrameRate = 0;
 	mRenderFrameRate = false;
@@ -66,6 +70,8 @@ Scene::~Scene()
 	SAFE_DELETE(mAnimationManager);
 	SAFE_DELETE(mFontManager);
 	SAFE_DELETE(mTextManager);
+	SAFE_DELETE(mUIWindowsManager);
+	SAFE_DELETE(mParticleManager);
 
 	// must be at the release end order because this is the base element of the scene
 	SAFE_DELETE(mMeshManager);
@@ -118,7 +124,7 @@ bool Scene::Initialise(HWND hWnd)
 void Scene::CreateSceneContent()
 {
 	mBackGroundNode = mRootSceneNode->CreateChild("BackGround_Node", Vector3(0, 0, RenderGroupManager::GetRenderGroupDepth(RenderGroup_BackGroud)), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_BackGroud);
-	mNodeFollowCamera = mRootSceneNode->CreateChild("Follow_Camera__Node", Vector3(0, 0, 0), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_TEXT);
+	mNodeFollowCamera = mRootSceneNode->CreateChild("Follow_Camera_Node", Vector3(0, 0, 0), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_TEXT);
 	CreateBackGround();
 	CreateFrameRateText();
 	InitialiseScene();
@@ -138,10 +144,11 @@ void Scene::ClearScene()
 	mRenderGroupManager->Clear();
 	mEffectManager->Clear();
 	mCamera->SetPosition(XMVectorSet(0, 0, 0, 0));
-	mCollisionManager->Clear();
-	mAnimationManager->Clear();
 	mTextManager->Clear();
 	mFontManager->Clear();
+	mUIWindowsManager->Clear();
+	mCollisionManager->Clear();
+	mAnimationManager->Clear();
 	// must be at the release end order because this is the base element of the scene
 	mMeshManager->Clear();
 	mMaterialManager->Clear();
@@ -162,6 +169,7 @@ void Scene::Update()
 {
 	mEffectManager->Update();
 	mAnimationManager->Update();
+	mUIWindowsManager->Update();
 	mCurrentGameTime += Timer::GetInstance()->GetDeltaFloat();
 	float BeginTime = 35.0f;
 	if (mCurrentGameTime > BeginTime) mCameraAnimation = true;
@@ -174,6 +182,7 @@ void Scene::Update()
 		mCamera->Translate(xOffset, 0, 0);
 		mNodeFollowCamera->Translate(xOffset, 0, 0);
 	}
+	mParticleManager->Update(Timer::GetInstance()->GetDeltaFloat());
 	RenderOneFrame();
 	return;
 }
@@ -246,6 +255,16 @@ FontManager* Scene::GetFontManager() const
 TextManager* Scene::GetTextManager() const
 {
 	return mTextManager;
+}
+
+UIWindowManager* Scene::GetUIWindowManager() const
+{
+	return mUIWindowsManager;
+}
+
+ParticleManager* Scene::GetParticleManager() const
+{
+	return mParticleManager;
 }
 
 std::string Scene::GetApplicationPath() const
@@ -522,6 +541,8 @@ void Scene::InitialiseScene()
 
 	// Bullets
 	CreateBullets();
+	// Particles
+	CreateParticle();
 	float PoemX = 0.3f;
 	// assume the poem in the center of the screen, and the poem is 4 column.
 	float StepX = PoemX * 2.0f / 4.0f;
@@ -604,6 +625,32 @@ void Scene::CreateBullets()
 		Max.y = Radius;
 		mCollisionManager->CreateCollision(Max, Min, false, SN, Block_Bullet_DecreaseLife);
 	}
+}
+
+void Scene::CreateParticle()
+{
+	// Smoke
+	ParticleSmoke* PS = mParticleManager->CreateSmoke();
+	PS->SetLifeTimeRange(5.0f, 0.5f);
+	PS->SetVelocity(0.2f, 0.02f);
+	PS->SetAcceleration(0.1f, 0.01f);
+	PS->SetDirection(Vector3(0.0f, 1.0f, 0.0f), 0.4f);
+	PS->SetMaxCount(30000);
+	PS->SetProduceCountPerSecond(5000);
+	PS->SetColorRange(Vector3(0.0411f, 0.0254f, 0.0353f), 0.1f, Vector3(0.9549f, 0.9235f, 0.927f), 0.1f);
+	PS->SetStartOffset(Vector3(0.5f, 0.1f, 0.5f));
+//	PS->ForceGpuOptimization();
+
+	SceneNode* PS_Node = mRootSceneNode->CreateChild("Particle_Node_Smoke", Vector3(0.0f, -0.8f, 1.0f), Quaternion::IDENTITY, Vector3(1, 1, 1), RenderGroup_ParticleSmoke);
+	PS_Node->AttachRenderable(PS);
+	PS->Initialise();
+
+	Material* Mat = mMaterialManager->CreateMaterial(SimpleColorPointForParticle);
+	Mat->SetDepthFunc(D3D11_COMPARISON_ALWAYS);
+	Mat->SetCullMode(D3D11_CULL_NONE);
+	Mat->ReBuild();
+
+	PS->SetMaterial(Mat);
 }
 
 void Scene::CreateBackGround()
@@ -701,6 +748,26 @@ int Scene::GetWindowWidth() const
 int Scene::GetWindowHeight() const
 {
 	return mWindowHeight;
+}
+
+Vector2 Scene::WindowsCoordToProjectionCoord(int x, int y)
+{
+	float _x = float(x) / float(CurrentScene->GetWindowWidth() - 1);
+	float _y = float(CurrentScene->GetWindowHeight() - 1 - y) / float(CurrentScene->GetWindowHeight() - 1);
+	// covert (0, 1) to (-1, 1)
+	Vector2 v = Vector2(_x * 2.0f - 1.0f, _y * 2.0f - 1.0f);
+
+	return v;
+}
+
+Vector2 Scene::WindowsCoordToWindowsPercent(int x, int y)
+{
+	float _x = float(x) / float(CurrentScene->GetWindowWidth());
+	float _y = float(y) / float(CurrentScene->GetWindowHeight());
+
+	Vector2 v = Vector2(_x, _y);
+
+	return v;
 }
 
 void Scene::OnInitialise(Effect* E)

@@ -63,11 +63,11 @@ bool Mesh::Initialise(void* VertexBuffer, int VertexElementSize, int VertexCount
 void Mesh::Render(Matrix4& WorldTransform)
 {
 	PreRender();
-	RenderMesh(WorldTransform);
+	RenderMesh(WorldTransform, GetPerspect());
 	PostRender();
 }
 
-void Mesh::RenderMesh(Matrix4& WorldTransform) const
+void Mesh::RenderMesh(Matrix4& WorldTransform, bool IsPerspective/* = true*/) const
 {
 	if (!mVisible) return;
 	XMMATRIX modelMat = XMMATRIX(WorldTransform[0][0], WorldTransform[0][1], WorldTransform[0][2], WorldTransform[0][3],
@@ -75,16 +75,26 @@ void Mesh::RenderMesh(Matrix4& WorldTransform) const
 		WorldTransform[2][0], WorldTransform[2][1], WorldTransform[2][2], WorldTransform[2][3],
 		WorldTransform[3][0], WorldTransform[3][1], WorldTransform[3][2], WorldTransform[3][3]);
 
-	RenderMesh(modelMat);
+	XMMATRIX ViewProjection;
+	if (!IsPerspective)
+	{
+		ViewProjection = Scene::GetCurrentScene()->GetCurrentCamera()->GetProjectViewMatrix();
+	}
+	else
+	{
+		ViewProjection = Scene::GetCurrentScene()->GetCurrentCamera()->GetProjectViewMatrixPerspect();
+	}
+	XMMATRIX FinalMatrix = XMMatrixMultiply(modelMat, ViewProjection);
+	RenderMesh(FinalMatrix);
+	return;
 }
 
-void Mesh::RenderMesh(XMMATRIX& WorldTransform) const
+void Mesh::RenderMesh(XMMATRIX& XMTransform) const
 {
 	char UniformBuffer[MAX_CONST_BUFFER];
 	memset(UniformBuffer, 0, sizeof(UniformBuffer));
-	XMMATRIX ViewProjection = Scene::GetCurrentScene()->GetCurrentCamera()->GetProjectViewMatrix();
-	XMMATRIX FinalMatrix = XMMatrixMultiply(WorldTransform, ViewProjection);
-	memcpy(UniformBuffer + 0, &FinalMatrix, 64);
+
+	memcpy(UniformBuffer + 0, &XMTransform, 64);
 	if (mMaterial->GetConstBufferLen() > 0 && (64 + mMaterial->GetConstBufferLen()) < MAX_CONST_BUFFER)
 	{
 		char* TempPtr = mMaterial->GetConstBufferPointer();
@@ -126,7 +136,7 @@ MeshManager::MeshManager()
 
 MeshManager::~MeshManager()
 {
-	DestroyAllMesh();
+	Clear();
 }
 
 Mesh* MeshManager::CreateMesh(void* VertexBuffer, int VertexElementSize, int VertexCount, void* IndexBuffer, int IndexCount)
@@ -231,13 +241,18 @@ Mesh* MeshManager::CreateLine(std::string Name, Vector3* Vertex)
 
 Mesh* MeshManager::CreateLineList(std::string Name, Vector3* Vertex, int VertexCount)
 {
-	if (mMeshArray.find(NULL) != mMeshArray.end())
+	if (mMeshArray.find(Name) != mMeshArray.end())
 	{
 		return mMeshArray[Name];
 	}
 	// assume as 0, 1, 2, 3
 	int IndexCount = (VertexCount - 1) * 2;
 	short* Indexbuffer = new short[IndexCount];
+	for (int i = 0; i < VertexCount - 1; i++)
+	{
+		Indexbuffer[i * 2] = i;
+		Indexbuffer[i * 2 + 1] = i + 1;
+	}
 	Mesh* M = new Mesh(Name);
 	M->Initialise(Vertex, sizeof(Vector3), VertexCount, Indexbuffer, IndexCount, D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 	mMeshArray[Name] = M;
@@ -345,14 +360,4 @@ bool MeshManager::DestroyMesh(Mesh* M)
 {
 	std::string Name = M->GetName();
 	return DestroyMesh(Name);
-}
-
-void MeshManager::DestroyAllMesh()
-{
-	std::map<std::string, Mesh*>::iterator it;
-	for (it = mMeshArray.begin(); it != mMeshArray.end(); it++)
-	{
-		SAFE_DELETE(it->second);
-	}
-	mMeshArray.clear();
 }

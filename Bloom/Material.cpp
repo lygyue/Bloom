@@ -36,6 +36,7 @@ Material::Material(std::string Name)
 	mDepthFunc					= D3D11_COMPARISON_LESS;
 	mBlendEnable				= true;
 	mBlendOP					= D3D11_BLEND_OP_ADD;
+	mCullMode					= D3D11_CULL_BACK;
 	ReBuild();
 }
 
@@ -114,6 +115,31 @@ void Material::SetBlendOP(D3D11_BLEND_OP DBO /* = D3D11_BLEND_OP_ADD */)
 	mBlendOP = DBO;
 }
 
+void Material::SetCullMode(D3D11_CULL_MODE CullMode)
+{
+	mCullMode = CullMode;
+}
+
+ID3D11SamplerState* Material::GetSampleState()
+{
+	return mSamplerState;
+}
+
+ID3D11RasterizerState* Material::GetRasterState()
+{
+	return mRasterizer;
+}
+
+ID3D11DepthStencilState* Material::GetDepthStencilState()
+{
+	return mDepthState;
+}
+
+ID3D11BlendState* Material::GetBlendState()
+{
+	return mBlendState;
+}
+
 void Material::Clear()
 {
 	SAFE_RELEASE(mSamplerState);
@@ -148,7 +174,7 @@ bool Material::ReBuild()
 		rs.AntialiasedLineEnable = true;
 	rs.DepthClipEnable = true;
 	rs.MultisampleEnable = mMultisampleEnable;				// if this true, rs.AntialiasedLineEnable must be false.
-	rs.CullMode = D3D11_CULL_BACK;
+	rs.CullMode = mCullMode;
 	rs.FillMode = mFillMode;
 	result = Device->CreateRasterizerState(&rs, &mRasterizer);
 	if (FAILED(result))

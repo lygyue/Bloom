@@ -14,14 +14,17 @@
 #include <map>
 #include <vector>
 #include "Math/Vector3.h"
+#include "Math/Vector4.h"
 
 class SceneNode;
 class SimpleSpline;
 class Quaternion;
+class Material;
 enum AnimationType
 {
 	Animation_Node,
 	Animation_FlowingText,
+	Animation_UI_UV,
 	Animation_UV,
 	Animation_Texture,
 	Animation_Skeleton,
@@ -105,6 +108,30 @@ protected:
 	SceneNode* mAttachNode;
 	float mAcceleration;
 	Vector3 mStartPosition;
+};
+
+class UIBackGroundAnimation : public Animation
+{
+	friend class AnimationManager;
+public:
+	virtual void Update() override;
+
+	void AddPoint(Vector2 Pos, float fTime);
+	void AddPoint(Vector3 Pos, float fTime);
+	void GetPoint(Vector3& Pos, float& fTime, int Index) const;
+	void AttachMaterial(Material* Mat);
+	Material* GetAttachMaterial() const;
+	void AddRoundPoint(float fTime);
+	void SetStyleColor(Vector4 Col);
+	Vector4 GetStyleColor() const;
+protected:
+	UIBackGroundAnimation(std::string Name);
+	virtual ~UIBackGroundAnimation();
+
+	std::vector<float> mTimes;
+	SimpleSpline* mSpline;
+	Material* mMaterial;
+	Vector4 mStyleColor;
 };
 
 class AnimationManager

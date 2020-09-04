@@ -23,6 +23,18 @@ static char* DefaultStandardSampleVertexShaderSrc =
 "{   oPosition = mul(ProjViewWorld, Position);"
 "	 oTexCoord = TexCoord;}";
 
+static char* DefaultStandardVertexColorVertexShaderSrc =
+"cbuffer SceneConstantBuffer : register(b0)"
+"{"
+"	float4x4 ProjView;"
+"}"
+"void main(in  float4 Position  : POSITION,    in  float4 VertexCol : COLOR0,"
+"          out float4 oPosition : SV_Position, out float4 oVertexCol : COLOR0)"
+"{"
+"	oPosition = mul(ProjView, Position);"
+//"	oPosition = Position;"
+"	oVertexCol = VertexCol;}";
+
 // Use this shader as text vertex shader. we can do a in-order fade in effects.
 const char* DefaultTextSampleVertexShaderSrc =
 "float4x4 ProjViewWorld;"
@@ -68,6 +80,12 @@ static char* DefaultPixelShaderSrcSimpleColor =
 "float4 main(in float4 Position : SV_Position, in float2 TexCoord : TEXCOORD0) : SV_Target"
 "{"
 "	return Col;"
+"}";
+
+static char* DefaultPixelShaderSrcSimpleVertexColor =
+"float4 main(in float4 Position : SV_Position, in float4 VertexColor : COLOR0) : SV_Target"
+"{ "
+"   return VertexColor;"
 "}";
 
 static char* DefaultPixelShaderSrcSimpleSample =
@@ -468,9 +486,26 @@ static char* DefaultPixelShaderSrcSimpleTextFadeOut =
 "	return Col;"
 "}";
 
+static char* DefaultPixelShaderSrcSimpleUVAnimation =
+"cbuffer SceneConstantBuffer : register(b0)"
+"{"
+"	float4x4 ProjViewWorld;"
+"	float4 ColorStyle;"
+"	float2 UVOffset;"
+"}"
+"Texture2D Texture   : register(t0); SamplerState Linear : register(s0); "
+"float4 main(in float4 Position : SV_Position, in float2 TexCoord : TEXCOORD0) : SV_Target"
+"{"
+"	float2 TexCol = Texture.Sample(Linear, TexCoord + UVOffset).rg; "
+"	float4 Col = TexCol.r * ColorStyle;"
+"	Col.a = TexCol.r;"
+"	return Col;"
+"}";
+
 std::string StandardShaderName[CutomShader] = { "Simple_Black", "Simple_White", "Simple_Red", "Simple_Green", "Simple_Blue", "Simple_Color", "Simple_Texture_Sample" ,
 "Simple_Fade","Simple_Fade_In_Out", "Simple_N_B_N", "Simple_L_R_L", "Simple_Elipse_Scale", "Simple_Layer_Alpha", "Simple_Helix", "SimpleLighting", "SimpleInOutAndBlurBlend",
-"Simple_PerlinNoise", "Simple_UScroll", "Simple_FogSimulation", "Simple_SampleWithBlur", "Simple_FontSample", "Simple_TextFadeIn", "Simple_TextFadeOut"};
+"Simple_PerlinNoise", "Simple_UScroll", "Simple_FogSimulation", "Simple_SampleWithBlur", "Simple_FontSample", "Simple_TextFadeIn", "Simple_TextFadeOut",
+"SimpleUVAnimation", "Simple_Vertex_Color"};
 
 Shader::Shader()
 {
@@ -570,6 +605,44 @@ bool Shader::Initialise(ID3D11Device* Device, std::string VSD, std::string PSD, 
 	return true;
 }
 
+//--------------------------------------------------------------------------------------
+// Helper for compiling shaders with D3DCompile
+//
+// With VS 11, we could load up prebuilt .cso files instead...
+//--------------------------------------------------------------------------------------
+HRESULT Shader::CompileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
+{
+	HRESULT hr = S_OK;
+
+	DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+#ifdef _DEBUG
+	// Set the D3DCOMPILE_DEBUG flag to embed debug information in the shaders.
+	// Setting this flag improves the shader debugging experience, but still allows 
+	// the shaders to be optimized and to run exactly the way they will run in
+	// the release configuration of this program.
+	dwShaderFlags |= D3DCOMPILE_DEBUG;
+
+	// Disable optimizations to further improve shader debugging
+	dwShaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+
+	ID3DBlob* pErrorBlob = nullptr;
+	hr = D3DCompileFromFile(szFileName, nullptr, nullptr, szEntryPoint, szShaderModel,
+		dwShaderFlags, 0, ppBlobOut, &pErrorBlob);
+	if (FAILED(hr))
+	{
+		if (pErrorBlob)
+		{
+			OutputDebugStringA(reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer()));
+			pErrorBlob->Release();
+		}
+		return hr;
+	}
+	if (pErrorBlob) pErrorBlob->Release();
+
+	return S_OK;
+}
+
 ShaderManager::ShaderManager()
 {
 
@@ -614,8 +687,13 @@ void ShaderManager::InitialiseStandardShaders()
 	CreateCustomShader(StandardShaderName[SimpleSampleWithBlur], DefaultStandardSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleSampleWithBlur, ShaderElementFlag);
 	CreateCustomShader(StandardShaderName[SimpleFontSample], DefaultStandardSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleFontSample, ShaderElementFlag);
 	CreateCustomShader(StandardShaderName[SimpleTextFadeOut], DefaultStandardSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleTextFadeOut, ShaderElementFlag);
+	CreateCustomShader(StandardShaderName[SimpleUVAnimation], DefaultStandardSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleUVAnimation, ShaderElementFlag);
 	ShaderElementFlag |= Ele_BlendIndices;
 	CreateCustomShader(StandardShaderName[SimpleTextFadeIn], DefaultTextSampleVertexShaderSrc, DefaultPixelShaderSrcSimpleTextFadeIn, ShaderElementFlag);
+
+	// custom order
+	ShaderElementFlag = Ele_Position | Ele_Color;
+	CreateCustomShader(StandardShaderName[SimpleColorPointForParticle], DefaultStandardVertexColorVertexShaderSrc, DefaultPixelShaderSrcSimpleVertexColor, ShaderElementFlag);
 }
 
 Shader* ShaderManager::CreateCustomShader(std::string VSD, std::string PSD, unsigned int ShaderElementFlag)

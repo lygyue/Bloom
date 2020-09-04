@@ -41,6 +41,8 @@ enum BaseShader
 	SimpleFontSample,
 	SimpleTextFadeIn,
 	SimpleTextFadeOut,
+	SimpleUVAnimation,
+	SimpleColorPointForParticle,
 	CutomShader,
 };
 enum ShaderElement
@@ -69,6 +71,8 @@ public:
 	{
 		return mInputLayout;
 	}
+
+	static HRESULT Shader::CompileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
 protected:
 	Shader();
 	~Shader();

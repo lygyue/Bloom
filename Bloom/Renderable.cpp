@@ -15,7 +15,9 @@ Renderable::Renderable()
 {
 	mRenderType = RenderMesh;
 	mListener = nullptr;
+	mAttachSceneNode = nullptr;
 	mVisible = true;
+	mIsPerspect = false;
 }
 
 Renderable::~Renderable()
@@ -28,6 +30,16 @@ std::string Renderable::GetName() const
 	return mName;
 }
 
+void Renderable::SetAttachSceneNode(SceneNode* SN)
+{
+	mAttachSceneNode = SN;
+}
+
+SceneNode* Renderable::GetAttachSceneNode() const
+{
+	return mAttachSceneNode;
+}
+
 void Renderable::SetVisible(bool Visible)
 {
 	mVisible = Visible;
@@ -36,6 +48,16 @@ void Renderable::SetVisible(bool Visible)
 bool Renderable::GetVisible() const
 {
 	return mVisible;
+}
+
+void Renderable::SetPerspect(bool Perspect)
+{
+	mIsPerspect = Perspect;
+}
+
+bool Renderable::GetPerspect() const
+{
+	return mIsPerspect;
 }
 
 void Renderable::SetListener(RenderableListener* Listener)

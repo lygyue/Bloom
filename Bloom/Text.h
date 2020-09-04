@@ -41,6 +41,8 @@ public:
 	void SetVisible(bool Visible);
 	bool GetVisible() const;
 	std::wstring GetName() const;
+	int GetWidth() const;
+	int GetHeight() const;
 protected:
 	Text();
 	~Text();
@@ -51,6 +53,8 @@ protected:
 	OriginalMode mAlignMode;
 	int mTextCount;
 	std::wstring mName;
+	int mWidth;
+	int mHeight;
 };
 
 enum TextColorType

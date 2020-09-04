@@ -87,6 +87,15 @@
     <ClCompile Include="UIElement.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="UIWindow.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\PerlinNoise.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Particle.cpp">
+      <Filter>ParticleSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Bloom.h" />
@@ -190,16 +199,17 @@
     <ClInclude Include="UIWindow.h">
       <Filter>UI</Filter>
     </ClInclude>
+    <ClInclude Include="Particle.h">
+      <Filter>ParticleSystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Bloom.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Bloom.ico" />
-    <Image Include="small.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="ReadMe.txt" />
+    <Image Include="Bloom.ico">
+      <Filter>Resource</Filter>
+    </Image>
+    <Image Include="small.ico">
+      <Filter>Resource</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Math">
@@ -214,5 +224,29 @@
     <Filter Include="BaseSystem">
       <UniqueIdentifier>{31c41ce9-9f52-4797-b3b9-4ad4258093f5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource">
+      <UniqueIdentifier>{2a469eed-0518-4127-b91d-9035a3029c8b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ParticleSystem">
+      <UniqueIdentifier>{fd50ec61-f1d2-4d4a-b27d-a6a8909505a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{3c47e978-b2c6-40c3-9d63-46a6089ad5bd}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Bloom.rc">
+      <Filter>Resource</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt">
+      <Filter>Resource</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="ParticleSmoke.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

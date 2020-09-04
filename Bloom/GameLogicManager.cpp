@@ -13,6 +13,7 @@
 #include "Scene.h"
 #include "Timer.h"
 #include "EffectManager.h"
+#include "UIWindow.h"
 #include "Log.h"
 
 GameLogicManager* GameLogicManager::ThisInstance = nullptr;
@@ -141,6 +142,12 @@ void GameLogicManager::OnKeyDown(unsigned char Key)
 		PauseGame = !PauseGame;
 		Timer::GetInstance()->SetPauseTimer(PauseGame);
 	}
+	else if (Key == VK_ESCAPE)
+	{
+		UIWindow* W = Scene::GetCurrentScene()->GetUIWindowManager()->GetSystemWindow();
+		bool Visible = W->GetVisible();
+		W->SetVisible(!Visible);
+	}
 }
 
 void GameLogicManager::OnKeyUp(unsigned char Key)
@@ -151,34 +158,41 @@ void GameLogicManager::OnKeyUp(unsigned char Key)
 void GameLogicManager::OnLButtonDown(int x, int y, unsigned int wParam)
 {
 	mPlayer->OnLButtonDown(x, y, wParam);
+	Scene::GetCurrentScene()->GetUIWindowManager()->OnLButtonDown(x, y, wParam);
 }
 
 void GameLogicManager::OnLButtonUp(int x, int y, unsigned int wParam)
 {
 	mPlayer->OnLButtonUp(x, y, wParam);
+	Scene::GetCurrentScene()->GetUIWindowManager()->OnLButtonUp(x, y, wParam);
 }
 
 void GameLogicManager::OnRButtonDown(int x, int y, unsigned int wParam)
 {
 	mPlayer->OnRButtonDown(x, y, wParam);
+	Scene::GetCurrentScene()->GetUIWindowManager()->OnRButtonDown(x, y, wParam);
 }
 
 void GameLogicManager::OnRButtonUp(int x, int y, unsigned int wParam)
 {
 	mPlayer->OnRButtonUp(x, y, wParam);
+	Scene::GetCurrentScene()->GetUIWindowManager()->OnRButtonUp(x, y, wParam);
 }
 
 void GameLogicManager::OnLButtonDbclk(int x, int y, unsigned int wParam)
 {
 	mPlayer->OnLButtonDbclk(x, y, wParam);
+	Scene::GetCurrentScene()->GetUIWindowManager()->OnLButtonDbclk(x, y, wParam);
 }
 
 void GameLogicManager::OnRButtonDbclk(int x, int y, unsigned int wParam)
 {
 	mPlayer->OnRButtonDbclk(x, y, wParam);
+	Scene::GetCurrentScene()->GetUIWindowManager()->OnRButtonDbclk(x, y, wParam);
 }
 
 void GameLogicManager::OnMouseMove(int x, int y, unsigned int wParam)
 {
 	mPlayer->OnMouseMove(x, y, wParam);
+	Scene::GetCurrentScene()->GetUIWindowManager()->OnMouseMove(x, y, wParam);
 }
